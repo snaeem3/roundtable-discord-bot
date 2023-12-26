@@ -1,3 +1,5 @@
+import { Game } from './game/Game';
+
 const eventHandler = require('./handlers/eventHandler');
 
 require('dotenv/config');
@@ -19,6 +21,10 @@ const client = new Client({
   ],
 });
 
-eventHandler(client);
+const botData = {
+  game: new Game(),
+  pokeCount: 0,
+};
+eventHandler(client, botData);
 
 client.login(process.env.DISCORD_TOKEN);
