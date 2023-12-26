@@ -7,10 +7,13 @@ export class Game {
 
   deadPlayers: Player[];
 
+  discussionPhaseInProgress: boolean;
+
   constructor() {
     this.gameInitiated = false;
     this.livingPlayers = [];
     this.deadPlayers = [];
+    this.discussionPhaseInProgress = false;
   }
 
   public get gameStatus() {
@@ -18,6 +21,7 @@ export class Game {
       gameInitiated: this.gameInitiated,
       livingPlayers: this.livingPlayers,
       deadPlayers: this.deadPlayers,
+      discussionPhaseInProgress: this.discussionPhaseInProgress,
     };
   }
 
@@ -48,5 +52,24 @@ export class Game {
     this.livingPlayers.push(player);
 
     return [true, `${player.name} has successfully joined the game`];
+  }
+
+  public toggleDiscussionPhaseInProgress() {
+    this.discussionPhaseInProgress = !this.discussionPhaseInProgress;
+  }
+
+  public beginDiscussionPhase(time?: number) {
+    if (!this.gameInitiated) return [false, 'No game in progress'];
+
+    if (this.discussionPhaseInProgress)
+      return [false, 'Discussion phase already in progress'];
+
+    if (this.livingPlayers.length < 2)
+      return [
+        false,
+        `Not enough players to begin. Current player count: ${this.livingPlayers.length}`,
+      ];
+
+    return [true, 'Round can begin'];
   }
 }
