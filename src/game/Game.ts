@@ -13,17 +13,17 @@ export class Game {
     this.deadPlayers = [];
   }
 
-  public initiateGame() {
-    this.gameInitiated = true;
-    return [true, 'Game Initiated'];
-  }
-
   public get gameStatus() {
     return {
       gameInitiated: this.gameInitiated,
       livingPlayers: this.livingPlayers,
       deadPlayers: this.deadPlayers,
     };
+  }
+
+  public initiateGame() {
+    this.gameInitiated = true;
+    return [true, 'Game Initiated'];
   }
 
   public resetGame() {
@@ -34,10 +34,19 @@ export class Game {
   }
 
   public joinGame(player: Player) {
-    // if game hasn't started
+    console.log('player attempting to join game: ', player.playerStatus);
+    // if game hasn't been initiated
+    if (!this.gameInitiated) return [false, 'Game not initiated'];
+
+    // if game already started
+    // return [false, 'Game has already started']
 
     // if player hasn't already joined
+    if (this.livingPlayers.includes(player))
+      return [false, `${player.name} has already joined`];
 
     this.livingPlayers.push(player);
+
+    return [true, `${player.name} has successfully joined the game`];
   }
 }
