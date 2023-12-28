@@ -9,7 +9,7 @@ export class Player {
 
   ghost: boolean;
 
-  alliances: string[];
+  uniqueAlliances: string[];
 
   assistedKills: string[];
 
@@ -25,7 +25,7 @@ export class Player {
     this.dmg = 1;
     this.def = 2;
     this.ghost = false;
-    this.alliances = [];
+    this.uniqueAlliances = [];
     this.assistedKills = [];
     this.soloKills = [];
     this.victoryPoints = 0;
@@ -38,10 +38,18 @@ export class Player {
       dmg: this.dmg,
       def: this.def,
       ghost: this.ghost,
-      alliances: this.alliances,
+      uniqueAlliances: this.uniqueAlliances,
       assistedKills: this.assistedKills,
       soloKills: this.soloKills,
       victoryPoints: this.victoryPoints,
     };
+  }
+
+  public get tieBreakerScore() {
+    return (
+      this.assistedKills.length +
+      this.soloKills.length +
+      this.uniqueAlliances.length
+    );
   }
 }

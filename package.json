@@ -8,21 +8,32 @@
     "build": "tsc",
     "start": "node .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "jest"
   },
   "eslintConfig": {
-    "extends": ["wesbos/typescript"]
+    "extends": [
+      "wesbos/typescript"
+    ]
+  },
+  "jest": {
+    "preset": "ts-jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "eslint-config-wesbos": "^4.0.1"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.11",
     "@types/node": "^20.10.5",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.2",
+    "ts-jest": "^29.1.1",
     "tsx": "^4.7.0"
   }
 }
