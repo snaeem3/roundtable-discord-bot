@@ -126,16 +126,9 @@ export class Game {
   }
 
   public submitKnightsDilemma(player: Player, action: Action) {
-    if (!this.gameInitiated) return [false, 'No game in progress'];
+    const [preCheckPass, preCheckMsg] = this.actionPreCheck(player);
 
-    if (this.gameComplete) return [false, 'Game is complete'];
-
-    if (this.currentPhase !== GamePhase.ActionSubmit) {
-      return [
-        false,
-        `Can only submit during Action Submit Phase. Current Game Phase: ${this.currentGamePhase}`,
-      ];
-    }
+    if (!preCheckPass) return [false, preCheckMsg];
 
     if (this.livingPlayers.length > 2) {
       return [
@@ -168,14 +161,6 @@ export class Game {
       ];
     }
 
-    // Check if player already submitted an action
-    const index = this.currentRoundActivity.findIndex(
-      (activity) => activity.player.id === player.id,
-    );
-
-    if (index !== -1)
-      return [false, `${player.name} has already submitted an action`];
-
     // Add activity to currentRoundActivity array
     this.currentRoundActivity.push({ player, action });
 
@@ -190,6 +175,63 @@ export class Game {
     return [
       true,
       `${player.name} successfully submitted Knight's Dilemma Action. ${
+        this.livingPlayers.length - this.currentRoundActivity.length
+      } more action(s) needed to process round results`,
+    ];
+  }
+
+  public submitMexicanStandoff(
+    player: Player,
+    action: Action,
+    target?: Player,
+  ) {
+    const [preCheckPass, preCheckMsg] = target
+      ? this.actionPreCheck(player, [target])
+      : this.actionPreCheck(player);
+    if (!preCheckPass) return [false, preCheckMsg];
+
+    if (this.livingPlayers.length !== 3) {
+      return [
+        false,
+        `Incorrect player count for Mexican Standoff. Current player count: ${this.livingPlayers.length}`,
+      ];
+    }
+
+    if (
+      !(
+        action === Action.Parry ||
+        action === Action.Slash ||
+        action === Action.Deathwish
+      )
+    ) {
+      return [
+        false,
+        'Parry, Slash, and Deathwish are the only valid actions in a Mexican Standoff',
+      ];
+    }
+
+    // Ensure Slash and Parry have a target
+    if (
+      (action === Action.Parry || action === Action.Slash) &&
+      target === undefined
+    ) {
+      return [false, `${action} requires a target`];
+    }
+
+    // Add activity to currentRoundActivity array
+    this.currentRoundActivity.push({ player, action });
+
+    if (this.currentRoundActivity.length === this.livingPlayers.length) {
+      this.processRoundResults();
+      return [
+        true,
+        `${player.name} successfully submitted Mexican Standoff Action. All player actions submitted Round results processed`,
+      ];
+    }
+
+    return [
+      true,
+      `${player.name} successfully submitted Mexican Standoff Action. ${
         this.livingPlayers.length - this.currentRoundActivity.length
       } more action(s) needed to process round results`,
     ];
@@ -249,5 +291,45 @@ export class Game {
 
       this.gameComplete = true;
     }
+  }
+
+  actionPreCheck(player: Player, targets?: Player[]) {
+    if (!this.gameInitiated) return [false, 'No game in progress'];
+
+    if (this.gameComplete) return [false, 'Game is complete'];
+
+    if (this.currentPhase !== GamePhase.ActionSubmit) {
+      return [
+        false,
+        `Can only submit during Action Submit Phase. Current Game Phase: ${this.currentGamePhase}`,
+      ];
+    }
+
+    // Check if player already submitted an action
+    const index = this.currentRoundActivity.findIndex(
+      (activity) => activity.player.id === player.id,
+    );
+
+    if (index !== -1)
+      return [false, `${player.name} has already submitted an action`];
+
+    // Check if all targets are valid living players
+    if (targets) {
+      targets.forEach((target) => {
+        if (
+          !this.livingPlayers.find(
+            (livingPlayer) => livingPlayer.id === targets[0].id,
+          )
+        ) {
+          return [false, `${target.name} is not alive`];
+        }
+      });
+    }
+
+    return [true, 'Action successfully pre-checked'];
+  }
+
+  clearRoundActivity() {
+    this.currentRoundActivity = [];
   }
 }

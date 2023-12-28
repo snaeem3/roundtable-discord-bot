@@ -6,12 +6,14 @@ let game: Game;
 let player1: Player;
 let player2: Player;
 let player3: Player;
+let player4: Player;
 
 beforeEach(() => {
   game = new Game();
   player1 = new Player('01234', 'John');
   player2 = new Player('56789', 'Sarah');
   player3 = new Player('13579', 'George');
+  player4 = new Player('02468', 'Ryan');
 });
 
 test('Player can not join game not initiated', () => {
@@ -117,17 +119,108 @@ test('Game ends when both players truce', () => {
   expect(game.gameComplete).toBeTruthy();
 });
 
-// test('Both players receive 0 victory points when they both slash', () => {});
-// test(
-//   'Slashing player receives 5 victory points and Trucing player receives 0 victory points',
-// );
+test('Both players receive 0 victory points when they both slash and game ends', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  game.submitKnightsDilemma(player1, Action.Slash);
+  game.submitKnightsDilemma(player2, Action.Slash);
+
+  expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(0);
+  expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
+  expect(game.gameComplete).toBeTruthy();
+});
+
+test('Slashing player receives 5 victory points and Trucing player receives 0 victory points', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  game.submitKnightsDilemma(player1, Action.Slash);
+  game.submitKnightsDilemma(player2, Action.Truce);
+
+  expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(5);
+  expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
+  expect(game.gameComplete).toBeTruthy();
+});
+
+test("Knight's dilemma not available when more than 2 players are alive", () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitKnightsDilemma(player1, Action.Slash);
+
+  expect(success).toBeFalsy();
+  expect(msg).toBe('More than 2 players are alive. Current player count: 3');
+});
+
+test('Mexican standoff not available when more than 3 players are alive', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitMexicanStandoff(
+    player1,
+    Action.Slash,
+    player2,
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe(
+    'Incorrect player count for Mexican Standoff. Current player count: 4',
+  );
+});
+
+test('Mexican standoff not available when less than 3 players are alive', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitMexicanStandoff(
+    player1,
+    Action.Slash,
+    player2,
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe(
+    'Incorrect player count for Mexican Standoff. Current player count: 2',
+  );
+});
+
+test('Mexican Standoff slash must include a target', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitMexicanStandoff(player1, Action.Slash);
+  expect(success).toBeFalsy();
+  expect(msg).toBe('slash requires a target');
+});
+
+test('Mexican Standoff parry must include a target', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.currentGamePhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitMexicanStandoff(player1, Action.Parry);
+  expect(success).toBeFalsy();
+  expect(msg).toBe('parry requires a target');
+});
+
 // test("Only living players can submit Knight's Dilemma actions");
-// test("Knight's dilemma not available when more than 2 players are alive", () => {
-//   game.initiateGame();
-//   game.joinGame(player1);
-//   game.joinGame(player2);
-//   game.joinGame(player3);
-// });
 // test("Player's DMG bonus increments by 1 on an assisted kill");
 // test("Player's DMG bonus increments by 2 on an solo kill");
 // test('Only living players can submit Mexican Standoff actions');
@@ -138,6 +231,4 @@ test('Game ends when both players truce', () => {
 // test(
 //   '0 kill player successfully solo kills another player upon successful Mexican Standoff slash',
 // );
-// test('Mexican Standoff slash must include a target');
-// test('Mexican Standoff parry must include a target');
 // test('Player ghost status set to true upon death');

@@ -32,7 +32,7 @@ export interface Activity {
 }
 
 export interface GhostActivity extends Activity {
-  ghost: Player;
+  ghostTarget: Player;
 }
 
 export interface ActivityChecked extends Activity {
