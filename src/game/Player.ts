@@ -9,15 +9,13 @@ export class Player {
 
   ghost: boolean;
 
-  uniqueAlliances: string[];
+  uniqueAlliances: Player[];
 
-  assistedKills: string[];
+  assistedKills: Player[];
 
-  soloKills: string[];
+  soloKills: Player[];
 
   victoryPoints: number;
-
-  //   ally: ;
 
   constructor(playerId: string, playerName: string) {
     this.id = playerId;
@@ -51,5 +49,16 @@ export class Player {
       this.soloKills.length +
       this.uniqueAlliances.length
     );
+  }
+
+  public addUniqueAlly(ally: Player) {
+    // check that the given ally is not already included
+    if (this.uniqueAlliances.find((uniqueAlly) => uniqueAlly.id === ally.id))
+      return;
+    this.uniqueAlliances.push(ally);
+  }
+
+  public resetDEF(def: number = 2) {
+    this.def = def;
   }
 }
