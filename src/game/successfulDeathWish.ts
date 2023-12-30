@@ -20,6 +20,7 @@ export default function successfulDW(
 
   // Count how many actions were slashing the death wisher
   let count = 0;
+  const attackingPlayers: Player[] = [];
   filteredActivities.forEach((filteredActivity) => {
     if (
       filteredActivity.action === Action.Slash &&
@@ -27,16 +28,17 @@ export default function successfulDW(
       filteredActivity.targets[0].id === deathWisher.id
     ) {
       count += 1;
+      attackingPlayers.push(filteredActivity.player);
     }
   });
 
   if (count < 2) return false;
 
   // Mexican Standoff Deathwish
-  if (count === 2 && filteredActivities.length === 2) return true;
+  if (count === 2 && filteredActivities.length === 2) return attackingPlayers;
 
   if (count < 3) return false;
 
   // Otherwise count is >= 3 and is successful
-  return true;
+  return attackingPlayers;
 }

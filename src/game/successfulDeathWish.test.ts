@@ -26,7 +26,7 @@ test('Player can succeed DW in a Mexican Standoff', () => {
   activity3 = { player: player3, action: Action.Slash, targets: [player1] };
 
   const result = successfulDW(player1, [activity1, activity2, activity3]);
-  expect(result).toBeTruthy();
+  expect(result).toHaveLength(2);
 });
 
 test('Player can fail DW in a Mexican Standoff', () => {
@@ -52,7 +52,7 @@ test('Player can succeed DW in a standard round', () => {
     activity3,
     activity4,
   ]);
-  expect(result).toBeTruthy();
+  expect(result).toHaveLength(3);
 });
 
 test('Player can fail DW in a standard round', () => {
