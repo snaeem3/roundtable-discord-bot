@@ -19,6 +19,17 @@ beforeEach(() => {
   player4 = new Player('02468', 'Ryan');
 });
 
+test('Throw error if player did not Deathwish', () => {
+  activity1 = { player: player1, action: Action.Slash, targets: [player2] };
+
+  activity2 = { player: player2, action: Action.Slash, targets: [player1] };
+  activity3 = { player: player3, action: Action.Slash, targets: [player1] };
+
+  expect(() =>
+    successfulDW(player1, [activity1, activity2, activity3]),
+  ).toThrow(`${player1.name} did not Deathwish`);
+});
+
 test('Player can succeed DW in a Mexican Standoff', () => {
   activity1 = { player: player1, action: Action.Deathwish };
 
