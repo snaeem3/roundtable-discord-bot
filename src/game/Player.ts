@@ -81,6 +81,6 @@ export class Player {
   }
 
   updateDMG() {
-    this.dmg = this.assistedKills.length + 2 * this.soloKills.length;
+    this.dmg = 1 + (this.assistedKills.length + 2 * this.soloKills.length);
   }
 }

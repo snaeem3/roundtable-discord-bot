@@ -20,22 +20,6 @@ export default function resolveBackstabPenParries(
     const currentPlayerIndex = livingPlayers.findIndex(
       (livingPlayer) => livingPlayer.id === checkedActivity.player.id,
     );
-    // if (checkedActivity.action === Action.PenultimateParry) {
-    //   // check if target did a backstab
-    //   const allyAction = checkedActivities.find(
-    //     (act) => act.player.id === checkedActivity.targets[0],
-    //   )?.action;
-    //   //  if unsuccessful pen parry -> stage this player for death
-    //   if (allyAction !== Action.Backstab) {
-    //     deadFromUnsuccesfulPenParry.push(checkedActivity.player);
-    //   } else {
-    //     //  otherwise -> stage target for death and award solo kill
-    //     deadFromPenParry.push(checkedActivity.targets[0]);
-    //     livingPlayers[currentPlayerIndex].soloKills.push(
-    //       checkedActivity.targets[0],
-    //     );
-    //   }
-    // }
     if (
       checkedActivity.action === Action.Backstab &&
       checkedActivity.targets !== undefined
