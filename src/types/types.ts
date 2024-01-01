@@ -28,7 +28,7 @@ export interface Activity {
   player: Player;
   action: Action;
   ally?: Player;
-  targets?: Player[];
+  targets?: [Player] | [Player, Player];
 }
 
 export interface GhostActivity extends Activity {
@@ -36,16 +36,23 @@ export interface GhostActivity extends Activity {
 }
 
 export interface ActivityChecked extends Activity {
-  finalAction: Action;
+  finalAction: Action | 'none'; // could be set to Backstab or Penultimate Parry
   successfulAlly?: boolean;
 }
 
+export interface DMG {
+  amount: number;
+  originator: Player;
+  type: Action.Slash | Action.ThrowingKnives;
+}
+
 export enum Action {
-  Slash = 'slash',
-  Parry = 'parry',
-  Deathwish = 'deathwish',
+  ThrowingKnives = 'throwing knives',
   Backstab = 'backstab',
   PenultimateParry = 'penultimate parry',
+  Deathwish = 'deathwish',
+  Parry = 'parry',
+  Slash = 'slash',
   Truce = 'truce',
   Renounce = 'renounce',
 }

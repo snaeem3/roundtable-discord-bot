@@ -1,3 +1,5 @@
+import { DMG } from '../types/types';
+
 export class Player {
   id: string;
 
@@ -17,6 +19,8 @@ export class Player {
 
   victoryPoints: number;
 
+  roundDmgReceived: DMG[];
+
   constructor(playerId: string, playerName: string) {
     this.id = playerId;
     this.name = playerName;
@@ -27,6 +31,7 @@ export class Player {
     this.assistedKills = [];
     this.soloKills = [];
     this.victoryPoints = 0;
+    this.roundDmgReceived = [];
   }
 
   public get playerStatus() {
@@ -40,6 +45,7 @@ export class Player {
       assistedKills: this.assistedKills,
       soloKills: this.soloKills,
       victoryPoints: this.victoryPoints,
+      roundDmgReceived: this.roundDmgReceived,
     };
   }
 
@@ -60,5 +66,21 @@ export class Player {
 
   public resetDEF(def: number = 2) {
     this.def = def;
+  }
+
+  public addRoundDMG(dmg: DMG) {
+    this.roundDmgReceived.push(dmg);
+  }
+
+  public get totalRoundDmgReceived(): number {
+    return this.roundDmgReceived.reduce((total, dmg) => total + dmg.amount, 0);
+  }
+
+  public resetRoundDMG() {
+    this.roundDmgReceived = [];
+  }
+
+  updateDMG() {
+    this.dmg = this.assistedKills.length + 2 * this.soloKills.length;
   }
 }
