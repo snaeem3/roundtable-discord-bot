@@ -1,4 +1,4 @@
-import { ActivityChecked } from '../types/types';
+import { Action, ActivityChecked } from '../types/types';
 import { Player } from './Player';
 import moveLivingToDead from './moveLivingToDead';
 
@@ -39,8 +39,12 @@ export default function resolveDMG(
     }
     const totalDef = damagedPlayer.def + allyAvailableDEF;
 
-    // Check if player has taken enough DMG to die
-    if (damagedPlayer.totalRoundDmgReceived >= totalDef) {
+    // Check if player has taken enough DMG to die and did NOT Penultimate Parry
+    if (
+      damagedPlayer.totalRoundDmgReceived >= totalDef &&
+      damagedPlayerActivity &&
+      damagedPlayerActivity.action !== Action.PenultimateParry
+    ) {
       // If player received all DMG from 1 player, award that player a solo kill
       if (damagedPlayer.roundDmgReceived.length === 1) {
         const soloKillerIndex = livingPlayers.findIndex(

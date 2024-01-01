@@ -392,3 +392,51 @@ test('Everyone could die in Mexican standoff', () => {
   expect(updatedLivingPlayers).toHaveLength(0);
   expect(updatedDeadPlayers).toHaveLength(3);
 });
+
+test('Successful Penultimate Parry player takes no DMG', () => {
+  player2.addRoundDMG({ amount: 4, type: Action.Slash, originator: player3 });
+  // player3.addRoundDMG({ amount: 1, type: Action.Slash, originator: player1 });
+  checkedActivity1 = {
+    player: player1,
+    ally: player2,
+    action: Action.Backstab,
+    targets: [player3],
+    finalAction: Action.Backstab,
+    successfulAlly: true,
+  };
+  checkedActivity2 = {
+    player: player2,
+    ally: player1,
+    action: Action.PenultimateParry,
+    targets: [player1],
+    finalAction: Action.PenultimateParry,
+    successfulAlly: true,
+  };
+  checkedActivity3 = {
+    player: player3,
+    ally: player1,
+    action: Action.Slash,
+    targets: [player2],
+    finalAction: Action.Slash,
+    successfulAlly: false,
+  };
+  checkedActivity4 = {
+    player: player4,
+    ally: player1,
+    action: Action.Parry,
+    targets: [player2],
+    finalAction: Action.Parry,
+    successfulAlly: false,
+  };
+
+  livingPlayers = [player2, player3, player4];
+  deadPlayers = [player1];
+
+  const { updatedLivingPlayers, updatedDeadPlayers } = resolveDMG(
+    livingPlayers,
+    deadPlayers,
+    [checkedActivity1, checkedActivity2, checkedActivity3, checkedActivity4],
+  );
+  expect(updatedLivingPlayers).toHaveLength(3);
+  expect(updatedDeadPlayers).toHaveLength(1);
+});
