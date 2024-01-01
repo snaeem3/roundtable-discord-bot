@@ -1,7 +1,10 @@
 import { Action, Activity, ActivityChecked } from '../types/types';
 import { Player } from './Player';
+import moveLivingToDead from './moveLivingToDead';
 import resolveBackstabPenParries from './resolveBackstabsPenParries';
 import resolveDMG from './resolveDMG';
+import successfulDW from './successfulDeathWish';
+import successfulParry from './successfulParry';
 
 export default function updatePlayers(
   livingPlayers: Player[],
@@ -136,9 +139,38 @@ export default function updatePlayers(
   livingPlayers = backstabPenParryUpdates.updatedLivingPlayers;
   deadPlayers = backstabPenParryUpdates.updatedDeadPlayers;
 
-  // Apply Slash DMG to living players
+  // Check Deathwishes
+  const diedFromSuccessfulDW: Player[] = [];
+  const diedFromUnsuccessfulDW: Player[] = [];
   checkedActivities.forEach((checkedActivity) => {
+    if (checkedActivity.action === Action.Deathwish) {
+      const attackers = successfulDW(checkedActivity.player, checkedActivities);
+
+      if (!attackers) diedFromUnsuccessfulDW.push(checkedActivity.player);
+      else {
+        diedFromSuccessfulDW.push(...attackers);
+        const currentPlayerIndex = livingPlayers.findIndex(
+          (livingPlayer) => livingPlayer.id === checkedActivity.player.id,
+        );
+        livingPlayers[currentPlayerIndex].soloKills.push(...attackers);
+      }
+    }
+  });
+  const dwUpdates = moveLivingToDead(
+    livingPlayers,
+    deadPlayers,
+    [diedFromSuccessfulDW, diedFromUnsuccessfulDW].flat(),
+  );
+  livingPlayers = dwUpdates.updatedLivingPlayers;
+  deadPlayers = dwUpdates.updatedDeadPlayers;
+
+  // Apply Slash DMG to living players
+  const diedFromParry: Player[] = [];
+  const livingPlayerIds = livingPlayers.map((livingPlayer) => livingPlayer.id);
+  checkedActivities.forEach((checkedActivity) => {
+    // Check if player is still alive and slashed
     if (
+      livingPlayerIds.includes(checkedActivity.player.id) &&
       checkedActivity.action === Action.Slash &&
       checkedActivity.targets !== undefined
     ) {
@@ -148,22 +180,46 @@ export default function updatePlayers(
       );
       if (targetIndex !== -1) {
         // target is still alive
-        livingPlayers[targetIndex].addRoundDMG({
-          amount: checkedActivity.player.dmg,
-          type: Action.Slash,
-          originator: checkedActivity.player,
-        });
+        // Check if target parried this slash
+        const targetActivity = checkedActivities.find(
+          (activity) => activity.player.id === targetId,
+        );
+        if (
+          targetActivity?.action === Action.Parry &&
+          successfulParry(
+            targetActivity.player,
+            checkedActivity.player,
+            checkedActivities,
+          )
+        ) {
+          diedFromParry.push(checkedActivity.player);
+          livingPlayers[targetIndex].soloKills.push(checkedActivity.player);
+        } else {
+          // target did not parry so add a DMG
+          livingPlayers[targetIndex].addRoundDMG({
+            amount: checkedActivity.player.dmg,
+            type: Action.Slash,
+            originator: checkedActivity.player,
+          });
+        }
       }
     }
   });
+  const parryUpdates = moveLivingToDead(
+    livingPlayers,
+    deadPlayers,
+    diedFromParry,
+  );
+  livingPlayers = parryUpdates.updatedLivingPlayers;
+  deadPlayers = parryUpdates.updatedDeadPlayers;
 
-  const slashParryDwUpdates = resolveDMG(
+  const slashUpdates = resolveDMG(
     livingPlayers,
     deadPlayers,
     checkedActivities,
   );
-  livingPlayers = slashParryDwUpdates.updatedLivingPlayers;
-  deadPlayers = slashParryDwUpdates.updatedDeadPlayers;
+  livingPlayers = slashUpdates.updatedLivingPlayers;
+  deadPlayers = slashUpdates.updatedDeadPlayers;
 
   // Update dmg bonus for every living player
   livingPlayers.forEach((livingPlayer) => {

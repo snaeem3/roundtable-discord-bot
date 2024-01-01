@@ -176,8 +176,176 @@ test('Player ghost status set to true upon death', () => {
       activity3,
       activity4,
     ]);
-  expect(deadPlayers).toHaveLength(1);
+  expect(updatedDeadPlayers).toHaveLength(1);
   expect(
-    deadPlayers.find((deadPlayer) => deadPlayer.id === player2.id)?.ghost,
+    updatedDeadPlayers.find((deadPlayer) => deadPlayer.id === player2.id)
+      ?.ghost,
   ).toBeTruthy();
+});
+
+test('Player who successfully Parries receives 1 solo kill', () => {
+  livingPlayers = [player1, player2, player3, player4];
+
+  activity1 = {
+    player: player1,
+    action: Action.Parry,
+    targets: [player2],
+    ally: player4,
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player4,
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Parry,
+    targets: [player1],
+    ally: player1,
+  };
+  activity4 = {
+    player: player4,
+    action: Action.Parry,
+    targets: [player1],
+    ally: player3,
+  };
+
+  const { updatedLivingPlayers, updatedDeadPlayers, checkedActivities } =
+    updatePlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+      activity4,
+    ]);
+
+  expect(updatedLivingPlayers).toHaveLength(3);
+  expect(updatedDeadPlayers).toHaveLength(1);
+  expect(
+    updatedLivingPlayers.find((livingPlayer) => livingPlayer.id === player1.id)
+      ?.soloKills,
+  ).toHaveLength(1);
+});
+
+test('Player who successfully Parries can still die from slashDMG', () => {
+  livingPlayers = [player1, player2, player3, player4];
+
+  activity1 = {
+    player: player1,
+    action: Action.Parry,
+    targets: [player2],
+    ally: player4,
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player4,
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player1,
+  };
+  activity4 = {
+    player: player4,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player3,
+  };
+
+  const { updatedLivingPlayers, updatedDeadPlayers, checkedActivities } =
+    updatePlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+      activity4,
+    ]);
+  expect(updatedLivingPlayers).toHaveLength(2);
+  expect(updatedDeadPlayers).toHaveLength(2);
+  expect(updatedLivingPlayers[0].assistedKills).toHaveLength(1);
+  expect(updatedLivingPlayers[1].assistedKills).toHaveLength(1);
+});
+
+test('Player who successfully Deathwishes receives 3 solo kills', () => {
+  livingPlayers = [player1, player2, player3, player4];
+
+  activity1 = {
+    player: player1,
+    action: Action.Deathwish,
+    ally: player4,
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player4,
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player1,
+  };
+  activity4 = {
+    player: player4,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player3,
+  };
+
+  const { updatedLivingPlayers, updatedDeadPlayers, checkedActivities } =
+    updatePlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+      activity4,
+    ]);
+  expect(updatedDeadPlayers).toHaveLength(3);
+  expect(updatedLivingPlayers[0].soloKills).toHaveLength(3);
+});
+
+test('Slashing an unsuccessful Deathwish player does NOT grant an assisted/solo kill', () => {
+  livingPlayers = [player1, player2, player3, player4];
+
+  activity1 = {
+    player: player1,
+    action: Action.Deathwish,
+    ally: player4,
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player4,
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Slash,
+    targets: [player1],
+    ally: player1,
+  };
+  activity4 = {
+    player: player4,
+    action: Action.Parry,
+    targets: [player1],
+    ally: player3,
+  };
+
+  const { updatedLivingPlayers, updatedDeadPlayers, checkedActivities } =
+    updatePlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+      activity4,
+    ]);
+
+  expect(updatedDeadPlayers).toHaveLength(1);
+  expect(updatedLivingPlayers[0].assistedKills).toHaveLength(0);
+  expect(updatedLivingPlayers[1].assistedKills).toHaveLength(0);
+  expect(updatedLivingPlayers[2].assistedKills).toHaveLength(0);
+  expect(updatedLivingPlayers[0].soloKills).toHaveLength(0);
+  expect(updatedLivingPlayers[1].soloKills).toHaveLength(0);
+  expect(updatedLivingPlayers[2].soloKills).toHaveLength(0);
 });

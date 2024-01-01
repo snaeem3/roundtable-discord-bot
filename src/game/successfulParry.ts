@@ -19,6 +19,16 @@ export default function successfulParry(
     return true;
   });
 
+  const playerActivity = activities.find(
+    (activity) => activity.player.id === player.id,
+  );
+  // Player chose an incorrect target
+  if (
+    playerActivity?.targets &&
+    playerActivity.targets[0].id !== parryTarget.id
+  )
+    return false;
+
   const targetActivity = filteredActivities.find(
     (activity) => activity.player.id === parryTarget.id,
   );
