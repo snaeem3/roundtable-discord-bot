@@ -50,114 +50,117 @@ test('Can not begin a round when discussion phase is currently in progress', () 
   expect(msg).toBe('Discussion phase already in progress');
 });
 
-test("Can successfully submit Truce and Slash Knight's Dilemma actions", () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.beginDiscussionPhase();
-  game.currentGamePhase = GamePhase.ActionSubmit;
+describe("Knight's Dilemma Tests", () => {
+  test("Can successfully submit Truce and Slash Knight's Dilemma actions", () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.beginDiscussionPhase();
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  const [result1, msg1] = game.submitKnightsDilemma(player1, Action.Truce);
-  expect(result1).toBeTruthy();
-  expect(msg1).toBe(
-    `${player1.name} successfully submitted Knight's Dilemma Action. 1 more action(s) needed to process round results`,
-  );
+    const [result1, msg1] = game.submitKnightsDilemma(player1, Action.Truce);
+    expect(result1).toBeTruthy();
+    expect(msg1).toBe(
+      `${player1.name} successfully submitted Knight's Dilemma Action. 1 more action(s) needed to process round results`,
+    );
 
-  const [result2, msg2] = game.submitKnightsDilemma(player2, Action.Slash);
-  expect(result2).toBeTruthy();
-  expect(msg2).toBe(
-    `${player2.name} successfully submitted Knight's Dilemma Action. All player actions submitted Round results processed`,
-  );
-});
+    const [result2, msg2] = game.submitKnightsDilemma(player2, Action.Slash);
+    expect(result2).toBeTruthy();
+    expect(msg2).toBe(
+      `${player2.name} successfully submitted Knight's Dilemma Action. All player actions submitted Round results processed`,
+    );
+  });
 
-test('Renounce not available when players have the same # of kills + unique alliances', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.beginDiscussionPhase();
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test('Renounce not available when players have the same # of kills + unique alliances', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.beginDiscussionPhase();
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  const [result1, msg1] = game.submitKnightsDilemma(player1, Action.Renounce);
-  expect(result1).toBeFalsy();
-  expect(msg1).toBe(
-    `Renounce unavailable. Both players have a tiebreaker score of 0`,
-  );
-});
+    const [result1, msg1] = game.submitKnightsDilemma(player1, Action.Renounce);
+    expect(result1).toBeFalsy();
+    expect(msg1).toBe(
+      `Renounce unavailable. Both players have a tiebreaker score of 0`,
+    );
+  });
 
-test('Round results not available until all players have submitted their actions', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.beginDiscussionPhase();
-  game.currentGamePhase = GamePhase.ActionSubmit;
-});
+  test('Round results not available until all players have submitted their actions', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.beginDiscussionPhase();
+    game.currentGamePhase = GamePhase.ActionSubmit;
+    expect(game.recentRoundResult).toHaveLength(0);
+  });
 
-test('Both players receive 3 victory points when they both truce', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.beginDiscussionPhase();
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test('Both players receive 3 victory points when they both truce', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.beginDiscussionPhase();
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  game.submitKnightsDilemma(player1, Action.Truce);
-  game.submitKnightsDilemma(player2, Action.Truce);
+    game.submitKnightsDilemma(player1, Action.Truce);
+    game.submitKnightsDilemma(player2, Action.Truce);
 
-  expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(3);
-  expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(3);
-});
+    expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(3);
+    expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(3);
+  });
 
-test('Game ends when both players truce', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.beginDiscussionPhase();
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test('Game ends when both players truce', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.beginDiscussionPhase();
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  game.submitKnightsDilemma(player1, Action.Truce);
-  game.submitKnightsDilemma(player2, Action.Truce);
+    game.submitKnightsDilemma(player1, Action.Truce);
+    game.submitKnightsDilemma(player2, Action.Truce);
 
-  expect(game.gameComplete).toBeTruthy();
-});
+    expect(game.gameComplete).toBeTruthy();
+  });
 
-test('Both players receive 0 victory points when they both slash and game ends', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test('Both players receive 0 victory points when they both slash and game ends', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  game.submitKnightsDilemma(player1, Action.Slash);
-  game.submitKnightsDilemma(player2, Action.Slash);
+    game.submitKnightsDilemma(player1, Action.Slash);
+    game.submitKnightsDilemma(player2, Action.Slash);
 
-  expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(0);
-  expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
-  expect(game.gameComplete).toBeTruthy();
-});
+    expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(0);
+    expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
+    expect(game.gameComplete).toBeTruthy();
+  });
 
-test('Slashing player receives 5 victory points and Trucing player receives 0 victory points', () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test('Slashing player receives 5 victory points and Trucing player receives 0 victory points', () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  game.submitKnightsDilemma(player1, Action.Slash);
-  game.submitKnightsDilemma(player2, Action.Truce);
+    game.submitKnightsDilemma(player1, Action.Slash);
+    game.submitKnightsDilemma(player2, Action.Truce);
 
-  expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(5);
-  expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
-  expect(game.gameComplete).toBeTruthy();
-});
+    expect(game.getPlayerInfo(player1.id).victoryPoints).toBe(5);
+    expect(game.getPlayerInfo(player2.id).victoryPoints).toBe(0);
+    expect(game.gameComplete).toBeTruthy();
+  });
 
-test("Knight's dilemma not available when more than 2 players are alive", () => {
-  game.initiateGame();
-  game.joinGame(player1);
-  game.joinGame(player2);
-  game.joinGame(player3);
-  game.currentGamePhase = GamePhase.ActionSubmit;
+  test("Knight's dilemma not available when more than 2 players are alive", () => {
+    game.initiateGame();
+    game.joinGame(player1);
+    game.joinGame(player2);
+    game.joinGame(player3);
+    game.currentGamePhase = GamePhase.ActionSubmit;
 
-  const [success, msg] = game.submitKnightsDilemma(player1, Action.Slash);
+    const [success, msg] = game.submitKnightsDilemma(player1, Action.Slash);
 
-  expect(success).toBeFalsy();
-  expect(msg).toBe('More than 2 players are alive. Current player count: 3');
+    expect(success).toBeFalsy();
+    expect(msg).toBe('More than 2 players are alive. Current player count: 3');
+  });
 });
 
 test('Mexican standoff not available when more than 3 players are alive', () => {
@@ -220,15 +223,99 @@ test('Mexican Standoff parry must include a target', () => {
   expect(msg).toBe('parry requires a target');
 });
 
-// test("Only living players can submit Knight's Dilemma actions");
-// test("Player's DMG bonus increments by 1 on an assisted kill");
-// test("Player's DMG bonus increments by 2 on an solo kill");
-// test('Only living players can submit Mexican Standoff actions');
-// test('Player dies upon unsuccessful Mexican Standoff deathwish');
-// test(
-//   'Player receives 5 victory points upon successful Mexican Standoff deathwish',
-// );
-// test(
-//   '0 kill player successfully solo kills another player upon successful Mexican Standoff slash',
-// );
-// test('Player ghost status set to true upon death');
+// test("Only living players can submit actions", () => {
+//   game.initiateGame();
+// });
+
+test('Player can not target themselves', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+
+  let [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.Slash,
+    player2,
+    [player1],
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Player may not target themselves');
+
+  [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.ThrowingKnives,
+    player2,
+    [player3, player1],
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Player may not target themselves');
+});
+// test('Can only submit living players as allies);
+test('Can not submit yourself as an ally', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+  const [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.Slash,
+    player1,
+    [player2],
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Player may not ally themselves');
+});
+
+test('Throwing Knives must have 2 targets', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+  let [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.ThrowingKnives,
+    player2,
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Throwing Knives requires 2 targets, 0 target(s) received');
+
+  [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.ThrowingKnives,
+    player2,
+    [player3],
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Throwing Knives requires 2 targets, 1 target(s) received');
+});
+
+test('Slash and Parry must have 1 target', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+  let [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.Slash,
+    player2,
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Slash requires 1 target, 0 target(s) received');
+
+  [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.Parry,
+    player2,
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Parry requires 1 target, 0 target(s) received');
+});

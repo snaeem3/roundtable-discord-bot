@@ -34,15 +34,17 @@ export default function resolveBackstabPenParries(
         const successfulParrierIndex = livingPlayers.findIndex(
           (livingPlayer) => livingPlayer.id === allyActivity.player.id,
         );
-        livingPlayers[successfulParrierIndex].soloKills.push(
-          checkedActivity.player,
-        );
+        livingPlayers[successfulParrierIndex].soloKills.push({
+          player: checkedActivity.player,
+          method: Action.PenultimateParry,
+        });
       } else {
         // target player dies, backstabber gets a solo kill
         deadFromBackstab.push(checkedActivity.targets[0]);
-        livingPlayers[currentPlayerIndex].soloKills.push(
-          checkedActivity.targets[0],
-        );
+        livingPlayers[currentPlayerIndex].soloKills.push({
+          player: checkedActivity.targets[0],
+          method: Action.Backstab,
+        });
       }
     }
   });

@@ -268,7 +268,7 @@ test('Player who successfully Parries can still die from slashDMG', () => {
   expect(updatedLivingPlayers[1].assistedKills).toHaveLength(1);
 });
 
-test('Player who successfully Deathwishes receives 3 solo kills', () => {
+test('Player who successfully Deathwishes receives 3 solo kills and 5 victory points if they are the last player alive', () => {
   livingPlayers = [player1, player2, player3, player4];
 
   activity1 = {
@@ -304,6 +304,7 @@ test('Player who successfully Deathwishes receives 3 solo kills', () => {
     ]);
   expect(updatedDeadPlayers).toHaveLength(3);
   expect(updatedLivingPlayers[0].soloKills).toHaveLength(3);
+  expect(updatedLivingPlayers[0].victoryPoints).toBe(5);
 });
 
 test('Slashing an unsuccessful Deathwish player does NOT grant an assisted/solo kill', () => {

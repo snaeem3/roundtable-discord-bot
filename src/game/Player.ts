@@ -1,4 +1,4 @@
-import { DMG } from '../types/types';
+import { DMG, Kill } from '../types/types';
 
 export class Player {
   id: string;
@@ -13,9 +13,9 @@ export class Player {
 
   uniqueAlliances: Player[];
 
-  assistedKills: Player[];
+  assistedKills: Kill[];
 
-  soloKills: Player[];
+  soloKills: Kill[];
 
   victoryPoints: number;
 

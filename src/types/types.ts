@@ -64,3 +64,8 @@ export enum GamePhase {
   ActionSubmit = 'actionSubmit',
   ActionResolve = 'actionResolve',
 }
+
+export type Kill = {
+  player: Player;
+  method: Action;
+};

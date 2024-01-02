@@ -1,5 +1,8 @@
 import { Action, Activity, ActivityChecked, GamePhase } from '../types/types';
 import { Player } from './Player';
+import successfulDW from './successfulDeathWish';
+import updateMexicanStandoffPlayers from './updateMexicanStandoffPlayers';
+import updatePlayers from './updatePlayers';
 
 export class Game {
   gameInitiated: boolean;
@@ -125,7 +128,10 @@ export class Game {
     return [true, 'Round begins'];
   }
 
-  public submitKnightsDilemma(player: Player, action: Action) {
+  public submitKnightsDilemma(
+    player: Player,
+    action: Action.Truce | Action.Slash | Action.Renounce,
+  ) {
     const [preCheckPass, preCheckMsg] = this.actionPreCheck(player);
 
     if (!preCheckPass) return [false, preCheckMsg];
@@ -182,7 +188,7 @@ export class Game {
 
   public submitMexicanStandoff(
     player: Player,
-    action: Action,
+    action: Action.Slash | Action.Parry | Action.Deathwish,
     target?: Player,
   ) {
     const [preCheckPass, preCheckMsg] = target
@@ -232,6 +238,65 @@ export class Game {
     return [
       true,
       `${player.name} successfully submitted Mexican Standoff Action. ${
+        this.livingPlayers.length - this.currentRoundActivity.length
+      } more action(s) needed to process round results`,
+    ];
+  }
+
+  public submitStandardRoundActivity(
+    player: Player,
+    action:
+      | Action.Slash
+      | Action.Parry
+      | Action.Deathwish
+      | Action.ThrowingKnives,
+    ally: Player,
+    targets?: [Player] | [Player, Player],
+  ) {
+    const [preCheckPass, preCheckMsg] = this.actionPreCheck(
+      player,
+      targets,
+      ally,
+    );
+    if (!preCheckPass) return [false, preCheckMsg];
+
+    if (
+      !(
+        action === Action.Parry ||
+        action === Action.Slash ||
+        action === Action.Deathwish ||
+        action === Action.ThrowingKnives
+      )
+    ) {
+      return [
+        false,
+        'Parry, Slash, Deathwish, and Throwing Knives are the only valid actions in a standard round.',
+      ];
+    }
+
+    if (action === Action.ThrowingKnives && targets === undefined)
+      return [
+        false,
+        'Throwing Knives requires 2 targets, 0 target(s) received',
+      ];
+
+    if (action === Action.Slash && targets === undefined)
+      return [false, 'Slash requires 1 target, 0 target(s) received'];
+
+    if (action === Action.Parry && targets === undefined)
+      return [false, 'Parry requires 1 target, 0 target(s) received'];
+
+    if (action === Action.ThrowingKnives && targets?.length !== 2)
+      return [
+        false,
+        `Throwing Knives requires 2 targets, ${targets?.length} target(s) received`,
+      ];
+
+    this.currentRoundActivity.push({ player, action, ally, targets });
+
+    return [
+      true,
+      `${player.name} successfully submitted a Standard Round Action. ${
         this.livingPlayers.length - this.currentRoundActivity.length
       } more action(s) needed to process round results`,
     ];
@@ -290,10 +355,44 @@ export class Game {
       } // else both players slashed
 
       this.gameComplete = true;
+      return [true, "Knight's Dilemma successfully finished"];
     }
+
+    // Mexican Standoff
+    if (this.livingPlayers.length === 3) {
+      const mexicanStandoffUpdates = updateMexicanStandoffPlayers(
+        [this.livingPlayers[0], this.livingPlayers[1], this.livingPlayers[2]],
+        this.deadPlayers,
+        [
+          this.currentRoundActivity[0],
+          this.currentRoundActivity[1],
+          this.currentRoundActivity[2],
+        ],
+      );
+
+      if (mexicanStandoffUpdates) {
+        this.livingPlayers = mexicanStandoffUpdates.updatedLivingPlayers;
+        this.deadPlayers = mexicanStandoffUpdates.updatedDeadPlayers;
+        return [true, 'Mexican standoff successfully finished'];
+      }
+      return [false, 'Unable to process Mexican Standoff round'];
+    }
+
+    // Standard Round
+    const standardRoundUpdates = updatePlayers(
+      this.livingPlayers,
+      this.deadPlayers,
+      this.currentRoundActivity,
+    );
+    if (standardRoundUpdates) {
+      this.livingPlayers = standardRoundUpdates.updatedLivingPlayers;
+      this.deadPlayers = standardRoundUpdates.updatedDeadPlayers;
+      return [true, 'Standard round successfully processed'];
+    }
+    return [false, 'Error processing standard round'];
   }
 
-  actionPreCheck(player: Player, targets?: Player[]) {
+  actionPreCheck(player: Player, targets?: Player[], ally?: Player) {
     if (!this.gameInitiated) return [false, 'No game in progress'];
 
     if (this.gameComplete) return [false, 'Game is complete'];
@@ -314,6 +413,8 @@ export class Game {
       return [false, `${player.name} has already submitted an action`];
 
     // Check if all targets are valid living players
+    let success = true;
+    let msg = 'Action successfully pre-checked';
     if (targets) {
       targets.forEach((target) => {
         if (
@@ -321,12 +422,37 @@ export class Game {
             (livingPlayer) => livingPlayer.id === targets[0].id,
           )
         ) {
-          return [false, `${target.name} is not alive`];
+          success = false;
+          msg = `${target.name} is not alive`;
+          return;
+        }
+        // Check if target is the same as player
+        if (
+          targets[0].id === player.id ||
+          (targets.length === 2 && targets[1].id === player.id)
+        ) {
+          success = false;
+          msg = 'Player may not target themselves';
         }
       });
     }
 
-    return [true, 'Action successfully pre-checked'];
+    if (ally?.id === player.id) {
+      success = false;
+      msg = 'Player may not ally themselves';
+      return [success, msg];
+    }
+
+    if (
+      ally &&
+      !this.livingPlayers.find((livingPlayer) => livingPlayer.id === ally.id)
+    ) {
+      success = false;
+      msg = `Submitted ally ${ally?.name} is not alive`;
+      return [success, msg];
+    }
+
+    return [success, msg];
   }
 
   clearRoundActivity() {

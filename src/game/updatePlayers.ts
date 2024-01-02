@@ -1,4 +1,4 @@
-import { Action, Activity, ActivityChecked } from '../types/types';
+import { Action, Activity, ActivityChecked, Kill } from '../types/types';
 import { Player } from './Player';
 import moveLivingToDead from './moveLivingToDead';
 import resolveBackstabPenParries from './resolveBackstabsPenParries';
@@ -152,7 +152,11 @@ export default function updatePlayers(
         const currentPlayerIndex = livingPlayers.findIndex(
           (livingPlayer) => livingPlayer.id === checkedActivity.player.id,
         );
-        livingPlayers[currentPlayerIndex].soloKills.push(...attackers);
+        const dwKills: Kill[] = [];
+        attackers.forEach((attacker) =>
+          dwKills.push({ player: attacker, method: Action.Deathwish }),
+        );
+        livingPlayers[currentPlayerIndex].soloKills.push(...dwKills);
       }
     }
   });
@@ -193,7 +197,10 @@ export default function updatePlayers(
           )
         ) {
           diedFromParry.push(checkedActivity.player);
-          livingPlayers[targetIndex].soloKills.push(checkedActivity.player);
+          livingPlayers[targetIndex].soloKills.push({
+            player: checkedActivity.player,
+            method: Action.Parry,
+          });
         } else {
           // target did not parry so add a DMG
           livingPlayers[targetIndex].addRoundDMG({
@@ -225,6 +232,10 @@ export default function updatePlayers(
   livingPlayers.forEach((livingPlayer) => {
     livingPlayer.updateDMG();
   });
+
+  // Give the last living player 5 victory points
+  if (livingPlayers.length === 1) livingPlayers[0].victoryPoints += 5;
+
   // Set every dead player to ghost
   deadPlayers.forEach((deadPlayer) => (deadPlayer.ghost = true));
 

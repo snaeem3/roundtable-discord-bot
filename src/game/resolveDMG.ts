@@ -1,4 +1,4 @@
-import { Action, ActivityChecked } from '../types/types';
+import { Action, Activity, ActivityChecked } from '../types/types';
 import { Player } from './Player';
 import moveLivingToDead from './moveLivingToDead';
 
@@ -51,14 +51,31 @@ export default function resolveDMG(
           (livingPlayer) =>
             livingPlayer.id === damagedPlayer.roundDmgReceived[0].originator.id,
         );
-        livingPlayers[soloKillerIndex].soloKills.push(damagedPlayer);
+        // Determine how player was killed (should always be slash here)
+        const soloKillActivityIndex = checkedActivities.findIndex(
+          (activity) =>
+            activity.player.id ===
+            damagedPlayer.roundDmgReceived[0].originator.id,
+        );
+        livingPlayers[soloKillerIndex].soloKills.push({
+          player: damagedPlayer,
+          method: checkedActivities[soloKillActivityIndex].action,
+        });
       } else {
         // Otherwise award every participant an assisted kill
         damagedPlayer.roundDmgReceived.forEach((dmg) => {
           const assistKillerIndex = livingPlayers.findIndex(
             (livingPlayer) => livingPlayer.id === dmg.originator.id,
           );
-          livingPlayers[assistKillerIndex].assistedKills.push(damagedPlayer);
+
+          const assistKillActivityIndex = checkedActivities.findIndex(
+            (activity) => activity.player.id === dmg.originator.id,
+          );
+
+          livingPlayers[assistKillerIndex].assistedKills.push({
+            player: damagedPlayer,
+            method: checkedActivities[assistKillActivityIndex].action,
+          });
         });
       }
       // move this player to the staged for death array
