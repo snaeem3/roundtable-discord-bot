@@ -465,6 +465,33 @@ test('Slash and Parry must have 1 target', () => {
   expect(msg).toBe('Parry requires 1 target, 0 target(s) received');
 });
 
+test('On a new round, previous activities are saved and current activities are cleared', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.joinGame(player5);
+  game.currentPhase = GamePhase.ActionSubmit;
+  game.submitStandardRoundActivity(player1, Action.Slash, player2, [player5]);
+  game.submitStandardRoundActivity(player2, Action.ThrowingKnives, player1, [
+    player4,
+    player5,
+  ]);
+  game.submitStandardRoundActivity(player3, Action.Parry, player1, [player1]);
+  game.submitStandardRoundActivity(player4, Action.Parry, player5, [player1]);
+  game.submitStandardRoundActivity(player5, Action.Slash, player4, [player3]);
+
+  expect(game.roundActivity).toHaveLength(0);
+  expect(game.currentRoundActivity).toHaveLength(5);
+
+  game.newRound();
+
+  expect(game.roundActivity).toHaveLength(1);
+  expect(game.roundActivity[0]).toHaveLength(5);
+  expect(game.currentRoundActivity).toHaveLength(0);
+});
+
 test('Round damage does not carry over into a new round', () => {
   game.initiateGame();
   game.joinGame(player1);

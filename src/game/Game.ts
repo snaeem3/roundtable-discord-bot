@@ -7,7 +7,6 @@ import {
   RoundDeaths,
 } from '../types/types';
 import { Player } from './Player';
-import successfulDW from './successfulDeathWish';
 import updateMexicanStandoffPlayers from './updateMexicanStandoffPlayers';
 import updatePlayers from './updatePlayers';
 
