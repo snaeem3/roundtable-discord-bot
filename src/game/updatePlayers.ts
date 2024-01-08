@@ -243,5 +243,16 @@ export default function updatePlayers(
     updatedLivingPlayers: livingPlayers,
     updatedDeadPlayers: deadPlayers,
     checkedActivities,
+    deaths: {
+      throwingKnives: throwingKnivesUpdates.newlyDeadPlayers,
+      backstab: backstabPenParryUpdates.deadFromBackstab,
+      penParry: backstabPenParryUpdates.deadFromPenParry,
+      unsuccessfulPenParry:
+        backstabPenParryUpdates.deadFromUnsuccessfulPenParry,
+      successfulDeathwish: diedFromSuccessfulDW,
+      unsuccessfulDeathwish: diedFromUnsuccessfulDW,
+      parry: diedFromParry,
+      slash: slashUpdates.newlyDeadPlayers,
+    },
   };
 }

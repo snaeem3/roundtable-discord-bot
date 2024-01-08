@@ -69,3 +69,19 @@ export type Kill = {
   player: Player;
   method: Action;
 };
+
+export type RoundDeaths = {
+  throwingKnives: Player[];
+  backstab: Player[];
+  penParry: Player[];
+  unsuccessfulPenParry: Player[];
+  successfulDeathwish: Player[];
+  unsuccessfulDeathwish: Player[];
+  parry: Player[];
+  slash: Player[];
+};
+
+export type MexicanStandoffRoundDeaths = Pick<
+  RoundDeaths,
+  'slash' | 'parry' | 'successfulDeathwish' | 'unsuccessfulDeathwish'
+>;

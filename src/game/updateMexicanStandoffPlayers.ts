@@ -1,4 +1,9 @@
-import { Action, Activity, ActivityChecked } from '../types/types';
+import {
+  Action,
+  Activity,
+  ActivityChecked,
+  MexicanStandoffRoundDeaths,
+} from '../types/types';
 import { Player } from './Player';
 import moveLivingToDead from './moveLivingToDead';
 import resolveDMG from './resolveDMG';
@@ -13,6 +18,12 @@ export default function updateMexicanStandoffPlayers(
   updatedLivingPlayers = livingPlayers;
   let updatedDeadPlayers = deadPlayers;
   let successful = false;
+  const deaths: MexicanStandoffRoundDeaths = {
+    slash: [],
+    parry: [],
+    successfulDeathwish: [],
+    unsuccessfulDeathwish: [],
+  };
   activities.forEach((activity, i) => {
     const playerIndex = livingPlayers.findIndex(
       (livingPlayer) => livingPlayer.id === activity.player.id,
@@ -33,6 +44,7 @@ export default function updateMexicanStandoffPlayers(
         const updates = moveLivingToDead(livingPlayers, deadPlayers, attackers);
         updatedLivingPlayers = updates.updatedLivingPlayers;
         updatedDeadPlayers = updates.updatedDeadPlayers;
+        deaths.successfulDeathwish.push(...attackers);
         successful = true;
         return;
       }
@@ -42,32 +54,15 @@ export default function updateMexicanStandoffPlayers(
       ]);
       updatedLivingPlayers = updates.updatedLivingPlayers;
       updatedDeadPlayers = updates.updatedDeadPlayers;
+      deaths.unsuccessfulDeathwish.push(activity.player);
     }
   });
-  if (successful) return { updatedLivingPlayers, updatedDeadPlayers };
+  if (successful) return { updatedLivingPlayers, updatedDeadPlayers, deaths };
 
   activities.forEach((activity, i) => {
     const playerIndex = updatedLivingPlayers.findIndex(
       (livingPlayer) => livingPlayer.id === activity.player.id,
     );
-    // if (activity.action === Action.Parry) {
-    //   if (
-    //     activity.targets &&
-    //     successfulParry(activity.player, activity.targets[0], activities)
-    //   ) {
-    //     // Award a solo kill on a successful parry
-    //     updatedLivingPlayers[playerIndex].soloKills.push(activity.targets[0]);
-
-    //     // Get new living and dead players
-    //     const updates = moveLivingToDead(
-    //       updatedLivingPlayers,
-    //       updatedDeadPlayers,
-    //       [activity.targets[0]],
-    //     );
-    //     updatedLivingPlayers = updates.updatedLivingPlayers;
-    //     updatedDeadPlayers = updates.updatedDeadPlayers;
-    //   }
-    // }
 
     if (activity.action === Action.Slash && activity.targets) {
       const slashTargetId = activity.targets[0].id;
@@ -96,6 +91,7 @@ export default function updateMexicanStandoffPlayers(
         );
         updatedLivingPlayers = updates.updatedLivingPlayers;
         updatedDeadPlayers = updates.updatedDeadPlayers;
+        deaths.parry.push(activity.player);
       } else {
         // Otherwise add a DMG to the target
         const slashTargetIndex = updatedLivingPlayers.findIndex(
@@ -132,6 +128,7 @@ export default function updateMexicanStandoffPlayers(
 
   updatedLivingPlayers = updates.updatedLivingPlayers;
   updatedDeadPlayers = updates.updatedDeadPlayers;
+  deaths.slash.push(...updates.newlyDeadPlayers);
 
   // Not really necessary, but update dmg bonus for every living player
   updatedLivingPlayers.forEach((livingPlayer) => {
@@ -145,5 +142,5 @@ export default function updateMexicanStandoffPlayers(
   // Set every dead player to ghost
   updatedDeadPlayers.forEach((deadPlayer) => (deadPlayer.ghost = true));
 
-  return { updatedLivingPlayers, updatedDeadPlayers };
+  return { updatedLivingPlayers, updatedDeadPlayers, deaths };
 }

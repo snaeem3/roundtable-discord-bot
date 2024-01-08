@@ -89,6 +89,7 @@ export default function resolveDMG(
   return {
     updatedLivingPlayers: updates.updatedLivingPlayers,
     updatedDeadPlayers: updates.updatedDeadPlayers,
+    newlyDeadPlayers: stagedForDeath,
   };
 }
 

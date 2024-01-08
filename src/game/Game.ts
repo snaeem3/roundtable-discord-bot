@@ -1,4 +1,11 @@
-import { Action, Activity, ActivityChecked, GamePhase } from '../types/types';
+import {
+  Action,
+  Activity,
+  ActivityChecked,
+  GamePhase,
+  MexicanStandoffRoundDeaths,
+  RoundDeaths,
+} from '../types/types';
 import { Player } from './Player';
 import successfulDW from './successfulDeathWish';
 import updateMexicanStandoffPlayers from './updateMexicanStandoffPlayers';
@@ -15,9 +22,13 @@ export class Game {
 
   gameComplete: boolean;
 
-  roundResults: [];
+  roundActivity: Activity[][];
 
   currentRoundActivity: Activity[];
+
+  roundResults: (RoundDeaths | MexicanStandoffRoundDeaths)[];
+
+  gameResults: string;
 
   constructor() {
     this.gameInitiated = false;
@@ -26,7 +37,9 @@ export class Game {
     this.currentPhase = GamePhase.None;
     this.gameComplete = false;
     this.roundResults = [];
+    this.roundActivity = [];
     this.currentRoundActivity = [];
+    this.gameResults = 'Game not yet complete';
   }
 
   public get gameStatus() {
@@ -37,11 +50,30 @@ export class Game {
       currentPhase: this.currentPhase,
       gameComplete: this.gameComplete,
       roundResults: this.roundResults,
+      roundNumber: this.currentRoundNum,
     };
   }
 
   public get recentRoundResult() {
     return this.roundResults.slice(-1); // last element of array
+  }
+
+  private updateGameResults(renounceWinner?: Player, renounceLoser?: Player) {
+    if (this.livingPlayers.length >= 3) return;
+    if (this.livingPlayers.length === 1) {
+      this.gameComplete = true;
+      this.gameResults = `${this.livingPlayers[0].name} is the last knight standing!`;
+    } else if (this.livingPlayers.length === 0) {
+      this.gameComplete = true;
+      this.gameResults = `No knights remaining. Game Over!`;
+    } else if (
+      this.livingPlayers.length === 2 &&
+      renounceWinner &&
+      renounceLoser
+    ) {
+      this.gameComplete = true;
+      this.gameResults = `Renounced! ${renounceWinner.name} earned 2 victory points & ${renounceLoser.name}  earned 1 victory point`;
+    }
   }
 
   public get currentRoundNum() {
@@ -64,6 +96,10 @@ export class Game {
     } else {
       return this.deadPlayers[index];
     }
+  }
+
+  addRoundResult(deaths: RoundDeaths | MexicanStandoffRoundDeaths) {
+    this.roundResults.push(deaths);
   }
 
   public initiateGame() {
@@ -107,9 +143,9 @@ export class Game {
     return [true, `${player.name} has successfully joined the game`];
   }
 
-  public set currentGamePhase(phase: GamePhase) {
-    this.currentPhase = phase;
-  }
+  // public set currentGamePhase(phase: GamePhase) {
+  //   this.currentPhase = phase;
+  // }
 
   public beginDiscussionPhase(time?: number) {
     if (!this.gameInitiated) return [false, 'No game in progress'];
@@ -229,6 +265,7 @@ export class Game {
 
     if (this.currentRoundActivity.length === this.livingPlayers.length) {
       this.processRoundResults();
+      this.currentPhase = GamePhase.ActionResolve;
       return [
         true,
         `${player.name} successfully submitted Mexican Standoff Action. All player actions submitted Round results processed`,
@@ -294,6 +331,15 @@ export class Game {
 
     this.currentRoundActivity.push({ player, action, ally, targets });
 
+    if (this.currentRoundActivity.length === this.livingPlayers.length) {
+      this.processRoundResults();
+      this.currentPhase = GamePhase.ActionResolve;
+      return [
+        true,
+        `${player.name} successfully submitted a Standard Round Action. All player actions submitted. Round results processed`,
+      ];
+    }
+
     return [
       true,
       `${player.name} successfully submitted a Standard Round Action. ${
@@ -307,7 +353,7 @@ export class Game {
 
     if (this.gameComplete) return [false, 'Game is complete'];
 
-    this.currentGamePhase = GamePhase.ActionResolve;
+    this.currentPhase = GamePhase.ActionResolve;
 
     const numSubmittedActions = this.currentRoundActivity.length;
     if (numSubmittedActions < this.livingPlayers.length)
@@ -332,9 +378,11 @@ export class Game {
         ) {
           this.livingPlayers[0].victoryPoints += 2;
           this.livingPlayers[1].victoryPoints += 1;
+          this.updateGameResults(this.livingPlayers[0], this.livingPlayers[1]);
         } else {
           this.livingPlayers[0].victoryPoints += 1;
           this.livingPlayers[1].victoryPoints += 2;
+          this.updateGameResults(this.livingPlayers[1], this.livingPlayers[0]);
         }
       } else if (
         player0Action === Action.Truce &&
@@ -342,17 +390,23 @@ export class Game {
       ) {
         this.livingPlayers[0].victoryPoints += 3;
         this.livingPlayers[1].victoryPoints += 3;
+        this.gameResults = `${this.livingPlayers[0].name} and ${this.livingPlayers[1].name} have agreed to Truce! +3 victory points each`;
       } else if (
         player0Action === Action.Slash &&
         player1Action === Action.Truce
       ) {
         this.livingPlayers[0].victoryPoints += 5;
+        this.gameResults = `${this.livingPlayers[0].name} successfully Slashed and is the last knight standing! +5 victory points`;
       } else if (
         player0Action === Action.Truce &&
         player1Action === Action.Slash
       ) {
         this.livingPlayers[1].victoryPoints += 5;
-      } // else both players slashed
+        this.gameResults = `${this.livingPlayers[1].name} successfully Slashed and is the last knight standing! +5 victory points`;
+      } else {
+        // both players slashed
+        this.gameResults = `${this.livingPlayers[0].name} and ${this.livingPlayers[1].name} have slashed each other! Game ends with no victor!`;
+      }
 
       this.gameComplete = true;
       return [true, "Knight's Dilemma successfully finished"];
@@ -373,6 +427,8 @@ export class Game {
       if (mexicanStandoffUpdates) {
         this.livingPlayers = mexicanStandoffUpdates.updatedLivingPlayers;
         this.deadPlayers = mexicanStandoffUpdates.updatedDeadPlayers;
+        this.addRoundResult(mexicanStandoffUpdates.deaths);
+        this.updateGameResults();
         return [true, 'Mexican standoff successfully finished'];
       }
       return [false, 'Unable to process Mexican Standoff round'];
@@ -387,6 +443,8 @@ export class Game {
     if (standardRoundUpdates) {
       this.livingPlayers = standardRoundUpdates.updatedLivingPlayers;
       this.deadPlayers = standardRoundUpdates.updatedDeadPlayers;
+      this.addRoundResult(standardRoundUpdates.deaths);
+      this.updateGameResults();
       return [true, 'Standard round successfully processed'];
     }
     return [false, 'Error processing standard round'];
@@ -400,9 +458,15 @@ export class Game {
     if (this.currentPhase !== GamePhase.ActionSubmit) {
       return [
         false,
-        `Can only submit during Action Submit Phase. Current Game Phase: ${this.currentGamePhase}`,
+        `Can only submit during Action Submit Phase. Current Game Phase: ${this.currentPhase}`,
       ];
     }
+
+    // Check if player is currently alive
+    if (
+      !this.livingPlayers.find((livingPlayer) => livingPlayer.id === player.id)
+    )
+      return [false, `${player.name} is not a valid living player`];
 
     // Check if player already submitted an action
     const index = this.currentRoundActivity.findIndex(
@@ -455,7 +519,21 @@ export class Game {
     return [success, msg];
   }
 
-  clearRoundActivity() {
+  /**
+   * newRound
+   */
+  public newRound() {
+    if (!this.gameInitiated) return;
+    if (this.gameComplete) return;
+    if (this.currentPhase !== GamePhase.ActionResolve) return;
+
+    this.roundActivity.push(this.currentRoundActivity);
+    this.clearRoundActivity();
+    this.livingPlayers.forEach((livingPlayer) => livingPlayer.resetRoundDMG());
+    this.currentPhase = GamePhase.Discussion;
+  }
+
+  private clearRoundActivity() {
     this.currentRoundActivity = [];
   }
 }

@@ -74,5 +74,8 @@ export default function resolveBackstabPenParries(
   return {
     updatedLivingPlayers: updates.updatedLivingPlayers,
     updatedDeadPlayers: updates.updatedDeadPlayers,
+    deadFromBackstab,
+    deadFromPenParry,
+    deadFromUnsuccessfulPenParry,
   };
 }
