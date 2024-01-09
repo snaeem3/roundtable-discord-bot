@@ -516,3 +516,31 @@ test('Round damage does not carry over into a new round', () => {
     expect(livingPlayer.roundDmgReceived).toHaveLength(0);
   });
 });
+
+test('Game can end in a standard round if everyone dies', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+  game.submitStandardRoundActivity(player1, Action.ThrowingKnives, player2, [
+    player3,
+    player4,
+  ]);
+  game.submitStandardRoundActivity(player2, Action.ThrowingKnives, player1, [
+    player3,
+    player4,
+  ]);
+  game.submitStandardRoundActivity(player3, Action.ThrowingKnives, player4, [
+    player1,
+    player2,
+  ]);
+  game.submitStandardRoundActivity(player4, Action.ThrowingKnives, player3, [
+    player1,
+    player2,
+  ]);
+
+  expect(game.gameComplete).toBeTruthy();
+  expect(game.livingPlayers).toHaveLength(0);
+});

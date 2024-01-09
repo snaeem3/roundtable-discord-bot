@@ -1,3 +1,5 @@
+import { BotData } from '../../types/types';
+
 const {
   Client,
   Interaction,
@@ -8,10 +10,9 @@ const {
 module.exports = {
   name: 'resetgame',
   description: 'Resets all game variables',
-  callback: async (client, interaction, botData) => {
+  devOnly: true,
+  callback: async (client, interaction, botData: BotData) => {
     await interaction.deferReply();
-    // console.log('client: ', client);
-    // console.log('interaction: ', interaction);
     console.log('botData: ', botData);
     console.log('-----------------------Reset Game:-----------------------');
     const [success, msg] = botData.game.resetGame();

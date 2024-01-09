@@ -1,19 +1,27 @@
-import { Player } from '../../game/Player';
-import { GamePhase } from '../../types/types';
-
-const {
+import {
   Client,
   Interaction,
   ApplicationCommandOptionType,
   PermissionFlagsBits,
-} = require('discord.js');
+  GatewayIntentBits,
+  IntentsBitField,
+} from 'discord.js';
+import { Player } from '../../game/Player';
+import { BotData, GamePhase } from '../../types/types';
+
+// const {
+//   Client,
+//   Interaction,
+//   ApplicationCommandOptionType,
+//   PermissionFlagsBits,
+// } = require('discord.js');
 
 const defaultRoundTime = 90;
 
 module.exports = {
   name: 'beginround',
   description: `Begins the round. Default round time: ${defaultRoundTime} seconds`,
-  callback: async (client, interaction, botData) => {
+  callback: async (client, interaction, botData: BotData) => {
     const roundSeconds =
       interaction.options.get('time')?.value || defaultRoundTime;
 
@@ -46,7 +54,7 @@ module.exports = {
         const timeUpReply = await interaction.followUp(
           `Time's up! Submit your actions`,
         );
-        botData.game.currentGamePhase = GamePhase.ActionSubmit;
+        botData.game.currentPhase = GamePhase.ActionSubmit;
       }, roundSeconds * 1000);
     } else {
       await interaction.editReply(
@@ -64,7 +72,7 @@ module.exports = {
 };
 
 function addSecondsToDate(seconds: number) {
-  const OFFSET = 9; // Time always seems to be off by this number for some reason
+  const OFFSET = 0; // Time sometimes seems to be off by a number
   const currentDate = new Date();
   const futureDate = new Date(
     currentDate.getTime() + (seconds - OFFSET) * 1000,

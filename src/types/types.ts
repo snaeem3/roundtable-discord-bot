@@ -1,3 +1,4 @@
+import { Game } from '../game/Game';
 import { Player } from '../game/Player';
 
 export interface Choice {
@@ -23,6 +24,10 @@ export interface Command {
   botPermissions?: any[];
   //   callback?: () => void;
 }
+
+export type BotData = {
+  game: Game;
+};
 
 export interface Activity {
   player: Player;

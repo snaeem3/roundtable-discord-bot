@@ -1,12 +1,10 @@
-import { Command } from '../../types/types';
-
 const { devs, testServer } = require('../../../config.json');
 const getLocalCommands = require('../../utils/getLocalCommands');
 
 module.exports = async (client, interaction, botData) => {
   if (!interaction.isChatInputCommand()) return;
 
-  const localCommands: [Command] = getLocalCommands();
+  const localCommands = getLocalCommands();
 
   try {
     const commandObject = localCommands.find(

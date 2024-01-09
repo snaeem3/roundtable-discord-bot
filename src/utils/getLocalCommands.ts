@@ -20,11 +20,11 @@ module.exports = (exceptions = []) => {
       if (exceptions.includes(commandObject.name)) {
         continue;
       }
-      console.log('commandObject: ', commandObject);
+      // console.log('commandObject: ', commandObject);
       localCommands.push(commandObject);
     }
   }
 
-  console.log(commandCategories);
+  // console.log(commandCategories);
   return localCommands;
 };

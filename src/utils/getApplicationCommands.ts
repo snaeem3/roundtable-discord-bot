@@ -1,4 +1,6 @@
-module.exports = async (client, guildId) => {
+import type { Client } from 'discord.js';
+
+module.exports = async (client: Client, guildId) => {
   let applicationCommands;
 
   if (guildId) {

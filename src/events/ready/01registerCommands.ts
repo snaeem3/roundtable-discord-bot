@@ -1,14 +1,14 @@
-import { Command } from '../../types/types';
+import type { Client } from 'discord.js';
 
 const { testServer } = require('../../../config.json');
 const getApplicationCommands = require('../../utils/getApplicationCommands');
 const getLocalCommands = require('../../utils/getLocalCommands');
 const areCommandsDifferent = require('../../utils/areCommandsDifferent');
 
-module.exports = async (client) => {
+module.exports = async (client: Client) => {
   try {
-    const localCommands: [Command] = getLocalCommands();
-    const applicationCommands: [Command] = await getApplicationCommands(
+    const localCommands = getLocalCommands();
+    const applicationCommands = await getApplicationCommands(
       client,
       testServer,
     );

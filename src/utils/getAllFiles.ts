@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = (directory: string, foldersOnly = false) => {
-  const fileNames = [];
+  const fileNames: string[] = [];
 
   const files = fs.readdirSync(directory, { withFileTypes: true });
 

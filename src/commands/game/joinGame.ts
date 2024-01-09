@@ -1,16 +1,25 @@
-import { Player } from '../../game/Player';
-
-const {
+import {
   Client,
   Interaction,
   ApplicationCommandOptionType,
   PermissionFlagsBits,
-} = require('discord.js');
+  GatewayIntentBits,
+  IntentsBitField,
+} from 'discord.js';
+import { Player } from '../../game/Player';
+import { BotData } from '../../types/types';
+
+// const {
+//   Client,
+//   Interaction,
+//   ApplicationCommandOptionType,
+//   PermissionFlagsBits,
+// } = require('discord.js');
 
 module.exports = {
   name: 'joingame',
   description: 'Join the game',
-  callback: async (client, interaction, botData) => {
+  callback: async (client, interaction, botData: BotData) => {
     await interaction.deferReply();
     // console.log('client: ', client);
     // console.log('interaction.member.user: ', interaction.member.user);
@@ -27,7 +36,8 @@ module.exports = {
 
     if (success) {
       interaction.editReply(
-        `User ${interaction.member} successfully joined the game`,
+        `User ${interaction.member} successfully joined the game\n
+        ${botData.game.livingPlayers.length} player(s) joined the game`,
       );
     } else {
       interaction.editReply(

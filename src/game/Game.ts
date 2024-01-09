@@ -111,6 +111,13 @@ export class Game {
     this.gameInitiated = false;
     this.livingPlayers = [];
     this.deadPlayers = [];
+    this.currentPhase = GamePhase.None;
+    this.gameComplete = false;
+    this.roundResults = [];
+    this.roundActivity = [];
+    this.currentRoundActivity = [];
+    this.gameResults = 'Game not yet complete';
+
     return [true, 'Game Reset'];
   }
 
@@ -149,6 +156,9 @@ export class Game {
   public beginDiscussionPhase(time?: number) {
     if (!this.gameInitiated) return [false, 'No game in progress'];
 
+    if (this.gameComplete)
+      return [false, 'Game is complete. Start a new game to begin a round'];
+
     if (this.currentPhase === GamePhase.Discussion)
       return [false, 'Discussion phase already in progress'];
 
@@ -161,6 +171,52 @@ export class Game {
     this.currentPhase = GamePhase.Discussion;
 
     return [true, 'Round begins'];
+  }
+
+  /**
+   * submitActivity
+   */
+  public submitActivity(
+    player: Player,
+    action: Action,
+    ally?: Player,
+    targets?: [Player] | [Player, Player],
+  ) {
+    const [preCheckPass, preCheckMsg] = this.actionPreCheck(
+      player,
+      targets,
+      ally,
+    );
+    if (!preCheckPass) return [false, preCheckMsg];
+
+    if (this.livingPlayers.length === 2) {
+      if (
+        action === Action.Slash ||
+        action === Action.Truce ||
+        action === Action.Renounce
+      )
+        return this.submitKnightsDilemma(player, action);
+      return [false, `${action} is invalid in Knight's Dilemma`];
+    }
+    if (this.livingPlayers.length === 3) {
+      if (action === Action.Slash || action === Action.Parry)
+        if (targets)
+          return this.submitMexicanStandoff(player, action, targets[0]);
+        else return [false, `Target must be included for ${action}`];
+      if (action === Action.Deathwish)
+        return this.submitMexicanStandoff(player, action);
+      return [false, `${action} is invalid in Mexican Standoff`];
+    }
+    if (
+      action === Action.Slash ||
+      action === Action.Parry ||
+      action === Action.Deathwish ||
+      action === Action.ThrowingKnives
+    )
+      if (ally)
+        return this.submitStandardRoundActivity(player, action, ally, targets);
+      else return [false, `ally must be submitted in a standard round`];
+    return [false, `${action} is invalid in a standard round`];
   }
 
   public submitKnightsDilemma(
