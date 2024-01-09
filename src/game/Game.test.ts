@@ -441,6 +441,24 @@ test('Throwing Knives must have 2 targets', () => {
   expect(msg).toBe('Throwing Knives requires 2 targets, 1 target(s) received');
 });
 
+test('Throwing knives must have 2 different targets', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+
+  const [success, msg] = game.submitStandardRoundActivity(
+    player1,
+    Action.ThrowingKnives,
+    player2,
+    [player3, player3],
+  );
+  expect(success).toBeFalsy();
+  expect(msg).toBe('Throwing Knives requires 2 different valid targets');
+});
+
 test('Slash and Parry must have 1 target', () => {
   game.initiateGame();
   game.joinGame(player1);

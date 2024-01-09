@@ -384,6 +384,14 @@ export class Game {
         `Throwing Knives requires 2 targets, ${targets?.length} target(s) received`,
       ];
 
+    if (
+      action === Action.ThrowingKnives &&
+      targets !== undefined &&
+      targets.length === 2 &&
+      targets[0].id === targets[1].id
+    )
+      return [false, 'Throwing Knives requires 2 different valid targets'];
+
     this.currentRoundActivity.push({ player, action, ally, targets });
 
     if (this.currentRoundActivity.length === this.livingPlayers.length) {
