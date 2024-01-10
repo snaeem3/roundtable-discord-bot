@@ -483,6 +483,33 @@ test('Slash and Parry must have 1 target', () => {
   expect(msg).toBe('Parry requires 1 target, 0 target(s) received');
 });
 
+test('Submit Activity includes target if provided', () => {
+  game.initiateGame();
+  game.joinGame(player1);
+  game.joinGame(player2);
+  game.joinGame(player3);
+  game.joinGame(player4);
+  game.currentPhase = GamePhase.ActionSubmit;
+
+  game.submitActivity(player1, Action.Slash, player2, [player3]);
+
+  expect(game.currentRoundActivity[0].action).toBe(Action.Slash);
+  expect(game.currentRoundActivity[0].targets).toHaveLength(1);
+
+  game.submitActivity(player2, Action.Parry, player1, [player3]);
+
+  expect(game.currentRoundActivity[1].action).toBe(Action.Parry);
+  expect(game.currentRoundActivity[1].targets).toHaveLength(1);
+
+  game.submitActivity(player3, Action.ThrowingKnives, player4, [
+    player1,
+    player2,
+  ]);
+
+  expect(game.currentRoundActivity[2].action).toBe(Action.ThrowingKnives);
+  expect(game.currentRoundActivity[2].targets).toHaveLength(2);
+});
+
 test('On a new round, previous activities are saved and current activities are cleared', () => {
   game.initiateGame();
   game.joinGame(player1);

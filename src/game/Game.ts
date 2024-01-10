@@ -50,6 +50,7 @@ export class Game {
       gameComplete: this.gameComplete,
       roundResults: this.roundResults,
       roundNumber: this.currentRoundNum,
+      roundActivity: this.roundActivity,
     };
   }
 
@@ -168,6 +169,7 @@ export class Game {
         `Not enough players to begin. Current player count: ${this.livingPlayers.length}`,
       ];
 
+    this.newRound();
     this.currentPhase = GamePhase.Discussion;
 
     return [true, 'Round begins'];
@@ -316,7 +318,9 @@ export class Game {
     }
 
     // Add activity to currentRoundActivity array
-    this.currentRoundActivity.push({ player, action });
+    if (target !== undefined)
+      this.currentRoundActivity.push({ player, action, targets: [target] });
+    else this.currentRoundActivity.push({ player, action });
 
     if (this.currentRoundActivity.length === this.livingPlayers.length) {
       this.processRoundResults();

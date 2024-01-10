@@ -17,11 +17,11 @@ beforeEach(() => {
   player1 = new Player('01234', 'John');
   player2 = new Player('56789', 'Sarah');
   player3 = new Player('13579', 'George');
+  livingPlayers = [player1, player2, player3];
   deadPlayers = [];
 });
 
 test('Player receives 5 victory points upon successful Mexican Standoff deathwish', () => {
-  livingPlayers = [player1, player2, player3];
   activity1 = {
     player: player1,
     action: Action.Slash,
@@ -48,7 +48,6 @@ test('Player receives 5 victory points upon successful Mexican Standoff deathwis
 });
 
 test('All players can die from slash in Mexican Standoff', () => {
-  livingPlayers = [player1, player2, player3];
   activity1 = {
     player: player1,
     action: Action.Slash,
@@ -76,7 +75,6 @@ test('All players can die from slash in Mexican Standoff', () => {
 });
 
 test('Player dies upon unsuccessful Mexican standoff deathwish', () => {
-  livingPlayers = [player1, player2, player3];
   activity1 = {
     player: player1,
     action: Action.Deathwish,
@@ -103,7 +101,6 @@ test('Player dies upon unsuccessful Mexican standoff deathwish', () => {
 });
 
 test('If 2 players slash each other, the remaining player earns 5 victory points', () => {
-  livingPlayers = [player1, player2, player3];
   activity1 = {
     player: player1,
     action: Action.Slash,
@@ -128,4 +125,30 @@ test('If 2 players slash each other, the remaining player earns 5 victory points
 
   expect(updatedLivingPlayers).toHaveLength(1);
   expect(updatedLivingPlayers[0].victoryPoints).toBe(5);
+});
+
+test('Player can die from Parry in Mexican Standoff', () => {
+  activity1 = {
+    player: player1,
+    action: Action.Slash,
+    targets: [player2],
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Parry,
+    targets: [player1],
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Parry,
+    targets: [player1],
+  };
+  const { updatedLivingPlayers, updatedDeadPlayers } =
+    updateMexicanStandoffPlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+    ]);
+  expect(updatedLivingPlayers).toHaveLength(2);
+  expect(updatedDeadPlayers[0].id).toBe(player1.id);
 });
