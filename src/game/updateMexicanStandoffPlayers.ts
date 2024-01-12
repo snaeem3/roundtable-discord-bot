@@ -24,6 +24,7 @@ export default function updateMexicanStandoffPlayers(
     successfulDeathwish: [],
     unsuccessfulDeathwish: [],
   };
+  const stagedForUnsuccessfulDwDeath: Player[] = [];
   activities.forEach((activity, i) => {
     const playerIndex = livingPlayers.findIndex(
       (livingPlayer) => livingPlayer.id === activity.player.id,
@@ -49,15 +50,27 @@ export default function updateMexicanStandoffPlayers(
         return;
       }
       // this player becomes a dead player
-      const updates = moveLivingToDead(livingPlayers, deadPlayers, [
-        activity.player,
-      ]);
-      updatedLivingPlayers = updates.updatedLivingPlayers;
-      updatedDeadPlayers = updates.updatedDeadPlayers;
+      stagedForUnsuccessfulDwDeath.push(activity.player);
       deaths.unsuccessfulDeathwish.push(activity.player);
+      if (successful) {
+        const updates = moveLivingToDead(livingPlayers, deadPlayers, [
+          activity.player,
+        ]);
+        updatedLivingPlayers = updates.updatedLivingPlayers;
+        updatedDeadPlayers = updates.updatedDeadPlayers;
+        // return { updatedLivingPlayers, updatedDeadPlayers, deaths };
+      }
     }
   });
-  if (successful) return { updatedLivingPlayers, updatedDeadPlayers, deaths };
+  if (successful) return { updatedLivingPlayers, updatedDeadPlayers, deaths }; // must return outside forEach loop
+
+  const dwUpdates = moveLivingToDead(
+    livingPlayers,
+    deadPlayers,
+    stagedForUnsuccessfulDwDeath,
+  );
+  updatedLivingPlayers = dwUpdates.updatedLivingPlayers;
+  updatedDeadPlayers = dwUpdates.updatedDeadPlayers;
 
   activities.forEach((activity, i) => {
     const playerIndex = updatedLivingPlayers.findIndex(

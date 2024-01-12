@@ -152,3 +152,27 @@ test('Player can die from Parry in Mexican Standoff', () => {
   expect(updatedLivingPlayers).toHaveLength(2);
   expect(updatedDeadPlayers[0].id).toBe(player1.id);
 });
+
+test('All players can die from triple unsuccessful deathwish', () => {
+  activity1 = {
+    player: player1,
+    action: Action.Deathwish,
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Deathwish,
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Deathwish,
+  };
+  const { updatedLivingPlayers, updatedDeadPlayers } =
+    updateMexicanStandoffPlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+    ]);
+
+  expect(updatedLivingPlayers).toHaveLength(0);
+  expect(updatedDeadPlayers).toHaveLength(3);
+});
