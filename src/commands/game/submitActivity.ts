@@ -66,11 +66,11 @@ module.exports = {
         );
         return;
       }
-    console.log(currentPlayer);
+    console.log('current player: ', currentPlayer);
     console.log(action.value);
-    console.log(allyPlayer);
-    console.log(targetPlayer1);
-    console.log(targetPlayer2);
+    console.log('ally: ', allyPlayer);
+    console.log('target1: ', targetPlayer1);
+    console.log('target2: ', targetPlayer2);
     let targets: [Player] | [Player, Player] | undefined;
     if (targetPlayer1) targets = [targetPlayer1];
     if (targetPlayer1 && targetPlayer2)
@@ -93,15 +93,42 @@ module.exports = {
         ${msg}`,
       );
 
+      console.log('current round activity:');
+      console.log(botData.game.currentRoundActivity);
+
+      if (botData.game.currentPhase === GamePhase.ActionResolve) {
+        const deathsArray = botData.game.recentRoundResult;
+        console.log(deathsArray);
+        let output = '---------------Round Deaths---------------\n';
+        deathsArray.forEach((deathsObj) => {
+          console.log(deathsObj);
+          for (const [deathType, deadPlayers] of Object.entries(deathsObj)) {
+            const playerNames = deadPlayers.map(
+              (deadPlayer) => ` ${deadPlayer.name} `,
+            );
+            const formattedValue = playerNames.toString();
+            output += `${deathType} deaths: ${formattedValue}\n`;
+          }
+        });
+
+        output += '---------------Living Player Rankings---------------\n';
+        output += 'Player Name | Tiebreaker Score\n';
+
+        const rankedLivingPlayers = botData.game.livingPlayers.sort(
+          (a, b) => b.tieBreakerScore - a.tieBreakerScore,
+        );
+
+        rankedLivingPlayers.forEach((livingPlayer, i) => {
+          output += `${livingPlayer.name} | ${livingPlayer.tieBreakerScore}\n`;
+        });
+
+        output += '----------------------------------------------------\n';
+        const roundResultReply = await interaction.followUp(output);
+      }
+
       if (botData.game.gameComplete) {
         const gameOverReply = await interaction.followUp(
           botData.game.gameResults,
-        );
-      }
-
-      if (botData.game.currentPhase === GamePhase.ActionResolve) {
-        const roundResultReply = await interaction.followUp(
-          botData.game.recentRoundResult,
         );
       }
     } else {
