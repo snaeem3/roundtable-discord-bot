@@ -176,3 +176,37 @@ test('All players can die from triple unsuccessful deathwish', () => {
   expect(updatedLivingPlayers).toHaveLength(0);
   expect(updatedDeadPlayers).toHaveLength(3);
 });
+
+test('Parrying player receives kill credit over slashing player when target the same player', () => {
+  activity1 = {
+    player: player1,
+    action: Action.Slash,
+    targets: [player3],
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Parry,
+    targets: [player3],
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Slash,
+    targets: [player2],
+  };
+  const { updatedLivingPlayers, updatedDeadPlayers } =
+    updateMexicanStandoffPlayers(livingPlayers, deadPlayers, [
+      activity1,
+      activity2,
+      activity3,
+    ]);
+
+  expect(updatedLivingPlayers).toHaveLength(2);
+  expect(
+    updatedLivingPlayers.find((livingPlayer) => livingPlayer.id === player1.id)
+      ?.soloKills,
+  ).toHaveLength(0);
+  expect(
+    updatedLivingPlayers.find((livingPlayer) => livingPlayer.id === player2.id)
+      ?.soloKills,
+  ).toHaveLength(1);
+});
