@@ -57,6 +57,88 @@ test('Every player deathwish creates a diagonal matrix', () => {
   ]);
 });
 
+test('Slash and Parry show correct targets', () => {
+  activity1 = {
+    player: player1,
+    ally: player2,
+    action: Action.Slash,
+    targets: [player3],
+  };
+  activity2 = {
+    player: player2,
+    ally: player1,
+    action: Action.Parry,
+    targets: [player3],
+  };
+  activity3 = {
+    player: player3,
+    ally: player1,
+    action: Action.Slash,
+    targets: [player2],
+  };
+  activity4 = {
+    player: player4,
+    ally: player1,
+    action: Action.Parry,
+    targets: [player1],
+  };
+
+  const { actionMatrix } = activitiesToTable([
+    activity1,
+    activity2,
+    activity3,
+    activity4,
+  ]);
+  expect(actionMatrix).toEqual([
+    ['', player1.name, player2.name, player3.name, player4.name],
+    [player1.name, '', '', Action.Slash, ''],
+    [player2.name, '', '', Action.Parry, ''],
+    [player3.name, '', Action.Slash, '', ''],
+    [player4.name, Action.Parry, '', '', ''],
+  ]);
+});
+
+test('Throwing Knives correctly shows on both targets', () => {
+  activity1 = {
+    player: player1,
+    ally: player2,
+    action: Action.ThrowingKnives,
+    targets: [player3, player4],
+  };
+  activity2 = {
+    player: player2,
+    ally: player1,
+    action: Action.Parry,
+    targets: [player3],
+  };
+  activity3 = {
+    player: player3,
+    ally: player1,
+    action: Action.Slash,
+    targets: [player2],
+  };
+  activity4 = {
+    player: player4,
+    ally: player1,
+    action: Action.Parry,
+    targets: [player1],
+  };
+
+  const { actionMatrix } = activitiesToTable([
+    activity1,
+    activity2,
+    activity3,
+    activity4,
+  ]);
+  expect(actionMatrix).toEqual([
+    ['', player1.name, player2.name, player3.name, player4.name],
+    [player1.name, '', '', Action.ThrowingKnives, Action.ThrowingKnives],
+    [player2.name, '', '', Action.Parry, ''],
+    [player3.name, '', Action.Slash, '', ''],
+    [player4.name, Action.Parry, '', '', ''],
+  ]);
+});
+
 test('Ally matrix returns true on successful alliances, false on unsuccessful', () => {
   activity1 = {
     player: player1,

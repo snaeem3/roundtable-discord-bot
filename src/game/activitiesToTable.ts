@@ -8,31 +8,38 @@ export default function activitiesToTable(activities: Activity[]) {
   // In each row extract the targets from activities
   for (let i = 0; i < activities.length; i += 1) {
     const { player, action, ally, targets } = activities[i];
-    if (action === Action.Deathwish) {
-      actionMatrix[i][i] = Action.Deathwish;
-    }
+
     // get the indexes
     const allyIndex = activities.findIndex(
       (activity) => activity.player.id === ally?.id,
     );
-    let target0Index: number;
-    if (targets && targets[0] !== undefined) {
-      target0Index = activities.findIndex(
-        (activity) => activity.player.id === targets[0].id,
-      );
-    }
-    let target1Index: number;
-    if (targets && targets.length > 1) {
-      target1Index = activities.findIndex(
-        (activity) => activity.player.id === targets[1]?.id,
-      );
-    }
 
     // True if successful ally, false if unsuccessful
     if (activities[allyIndex].ally?.id === player.id) {
       allyMatrix[i][allyIndex] = true;
     } else {
       allyMatrix[i][allyIndex] = false;
+    }
+
+    let target0Index: number;
+    if (action === Action.Deathwish) {
+      actionMatrix[i][i] = Action.Deathwish;
+    } else if (action === Action.ThrowingKnives) {
+      if (targets !== undefined) {
+        target0Index = activities.findIndex(
+          (activity) => activity.player.id === targets[0].id,
+        );
+        const target1Index = activities.findIndex(
+          (activity) => activity.player.id === targets[1]?.id,
+        );
+        actionMatrix[i][target0Index] = Action.ThrowingKnives;
+        actionMatrix[i][target1Index] = Action.ThrowingKnives;
+      }
+    } else if (targets !== undefined) {
+      target0Index = activities.findIndex(
+        (activity) => activity.player.id === targets[0].id,
+      );
+      actionMatrix[i][target0Index] = action;
     }
   }
 
@@ -53,8 +60,6 @@ export default function activitiesToTable(activities: Activity[]) {
     allyMatrix[i] = [activities[i - 1].player.name, allyMatrix[i]].flat();
   }
 
-  console.table(actionMatrix);
-  console.table(allyMatrix);
   return { actionMatrix, allyMatrix };
 }
 
