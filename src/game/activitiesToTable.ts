@@ -39,7 +39,13 @@ export default function activitiesToTable(activities: Activity[]) {
       target0Index = activities.findIndex(
         (activity) => activity.player.id === targets[0].id,
       );
+
       actionMatrix[i][target0Index] = action;
+
+      // Add Total DMG if player slashed
+      if (action === Action.Slash)
+        actionMatrix[i][target0Index] =
+          `${actionMatrix[i][target0Index]} (${player.dmg})`;
     }
   }
 
