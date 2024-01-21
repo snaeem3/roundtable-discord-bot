@@ -15,10 +15,12 @@ export default function activitiesToTable(activities: Activity[]) {
     );
 
     // True if successful ally, false if unsuccessful
-    if (activities[allyIndex].ally?.id === player.id) {
-      allyMatrix[i][allyIndex] = true;
-    } else {
-      allyMatrix[i][allyIndex] = false;
+    if (allyIndex !== -1) {
+      if (activities[allyIndex].ally?.id === player.id) {
+        allyMatrix[i][allyIndex] = true;
+      } else {
+        allyMatrix[i][allyIndex] = false;
+      }
     }
 
     let target0Index: number;
@@ -43,9 +45,10 @@ export default function activitiesToTable(activities: Activity[]) {
       actionMatrix[i][target0Index] = action;
 
       // Add Total DMG if player slashed
+      const dmg = activities.length === 3 ? 2 : player.dmg; // 2 DMG in Mexican standoff round
       if (action === Action.Slash)
         actionMatrix[i][target0Index] =
-          `${actionMatrix[i][target0Index]} (${player.dmg})`;
+          `${actionMatrix[i][target0Index]} (${dmg})`;
     }
   }
 

@@ -218,3 +218,28 @@ test('Ally matrix returns true on successful alliances, false on unsuccessful', 
     [player4.name, false, '', '', '-'],
   ]);
 });
+
+test('Handles Mexican Standoff actions', () => {
+  activity1 = {
+    player: player1,
+    action: Action.Slash,
+    targets: [player3],
+  };
+  activity2 = {
+    player: player2,
+    action: Action.Parry,
+    targets: [player3],
+  };
+  activity3 = {
+    player: player3,
+    action: Action.Deathwish,
+  };
+  const { actionMatrix } = activitiesToTable([activity1, activity2, activity3]);
+
+  expect(actionMatrix).toEqual([
+    ['', player1.name, player2.name, player3.name],
+    [player1.name, '', '', `${Action.Slash} (2)`],
+    [player2.name, '', '', Action.Parry],
+    [player3.name, '', '', Action.Deathwish],
+  ]);
+});

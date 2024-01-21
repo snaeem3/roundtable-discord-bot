@@ -3,10 +3,22 @@ import {
   Interaction,
   ApplicationCommandOptionType,
   PermissionFlagsBits,
+  Attachment,
+  AttachmentBuilder,
+  EmbedBuilder,
 } from 'discord.js';
+import {
+  UltimateTextToImage,
+  HorizontalImage,
+  VerticalImage,
+} from 'ultimate-text-to-image';
+import path from 'path'; // Using fs.promises for asynchronous file operations
 import { Player } from '../../game/Player';
 import { Game } from '../../game/Game';
 import { Action, BotData, GamePhase } from '../../types/types';
+import activitiesToTable from '../../game/activitiesToTable';
+
+const fs = require('fs').promises;
 
 // const {
 //   Client,
@@ -14,6 +26,29 @@ import { Action, BotData, GamePhase } from '../../types/types';
 //   ApplicationCommandOptionType,
 //   PermissionFlagsBits,
 // } = require('discord.js');
+
+function findLongestStringLength(matrix: string[][]) {
+  let maxLength = 0;
+
+  for (let i = 0; i < matrix.length; i += 1) {
+    for (let j = 0; j < matrix[i].length; j += 1) {
+      const currentLength = matrix[i][j].length;
+      if (currentLength > maxLength) {
+        maxLength = currentLength;
+      }
+    }
+  }
+
+  return maxLength;
+}
+function appendUnderscoresToLength(str: string, X: number) {
+  if (str.length < X) {
+    const underscoresToAdd = X - str.length;
+    const underscores = '_'.repeat(underscoresToAdd);
+    return str + underscores;
+  }
+  return str; // No need to append underscores if the string is already longer than or equal to X
+}
 
 module.exports = {
   name: 'submitactivity',
@@ -99,6 +134,61 @@ module.exports = {
       if (botData.game.currentPhase === GamePhase.ActionResolve) {
         const deathsArray = botData.game.recentRoundResult;
         console.log(deathsArray);
+        // let output = '---------------Actions---------------\n';
+        const { actionMatrix } = activitiesToTable(
+          botData.game.currentRoundActivity,
+        );
+        console.table(actionMatrix);
+
+        const longestString = findLongestStringLength(actionMatrix);
+
+        const actionImgMatrix = [];
+        const backgroundColor = '#000000';
+        for (let row = 0; row < actionMatrix.length; row += 1) {
+          const rowArray = [];
+          for (let col = 0; col < actionMatrix[row].length; col += 1) {
+            // Make every text the same length
+            const text = appendUnderscoresToLength(
+              actionMatrix[row][col],
+              longestString,
+            );
+            let fontColor = '#00FF00';
+            if (row === 0 || col === 0) fontColor = '#ff00ff';
+            if (text.split('').every((char) => char === '_'))
+              fontColor = backgroundColor; // Camoflauge underscores
+            const textToImage = new UltimateTextToImage(text, {
+              // backgroundColor,
+              fontSize: 60,
+              fontColor,
+              fontFamily: 'Consolas',
+              margin: 20,
+            });
+            rowArray.push(textToImage);
+          }
+          const rowImg = new HorizontalImage(rowArray, { backgroundColor });
+          actionImgMatrix.push(rowImg);
+        }
+        const finalImg = new VerticalImage(actionImgMatrix);
+        finalImg.render().toFile(path.join(__dirname, 'actionsImg.png'));
+        const imagePath = path.join(__dirname, 'actionsImg.png');
+        console.log('imagePath: ', imagePath);
+
+        const file = new AttachmentBuilder(imagePath);
+        const actionsEmbed = new EmbedBuilder()
+          .setTitle(`Round ${botData.game.currentRoundNum} Actions`)
+          .setImage('attachment://actionsImg.png');
+
+        try {
+          await interaction.followUp({ embeds: [actionsEmbed], files: [file] });
+          console.log('Image sent successfully!');
+
+          // Delete the image file after sending
+          await fs.unlink(imagePath);
+          console.log('Image file deleted.');
+        } catch (error) {
+          console.error('Error:', error);
+        }
+
         let output = '---------------Round Deaths---------------\n';
         deathsArray.forEach((deathsObj) => {
           console.log(deathsObj);
