@@ -51,8 +51,17 @@ module.exports = {
 
       setTimeout(async () => {
         await timeRemainingReply.delete();
+        const sortedLivingPlayers = botData.game.livingPlayers.sort(
+          (a, b) => b.tieBreakerScore - a.tieBreakerScore,
+        );
+        const livingPlayerNames = sortedLivingPlayers
+          .map(
+            (livingPlayer) =>
+              `${livingPlayer.name} (${livingPlayer.tieBreakerScore})`,
+          )
+          .join('\n');
         const timeUpReply = await interaction.followUp(
-          `Time's up! Submit your actions`,
+          `Time's up! Submit your actions\n\nCurrent Living Players:\n${livingPlayerNames}`,
         );
         botData.game.currentPhase = GamePhase.ActionSubmit;
       }, roundSeconds * 1000);

@@ -135,7 +135,7 @@ module.exports = {
         const deathsArray = botData.game.recentRoundResult;
         console.log(deathsArray);
         // let output = '---------------Actions---------------\n';
-        const { actionMatrix } = activitiesToTable(
+        const { actionMatrix, allyMatrix } = activitiesToTable(
           botData.game.currentRoundActivity,
         );
         console.table(actionMatrix);
@@ -143,47 +143,88 @@ module.exports = {
         const longestString = findLongestStringLength(actionMatrix);
 
         const actionImgMatrix = [];
+        const allyImgMatrix = [];
         const backgroundColor = '#000000';
         for (let row = 0; row < actionMatrix.length; row += 1) {
-          const rowArray = [];
+          const actionRowArray = [];
+          const allyRowArray = [];
           for (let col = 0; col < actionMatrix[row].length; col += 1) {
             // Make every text the same length
-            const text = appendUnderscoresToLength(
+            const actionText = appendUnderscoresToLength(
               actionMatrix[row][col],
               longestString,
             );
             let fontColor = '#00FF00';
             if (row === 0 || col === 0) fontColor = '#ff00ff';
-            if (text.split('').every((char) => char === '_'))
+            if (actionText.split('').every((char) => char === '_'))
               fontColor = backgroundColor; // Camoflauge underscores
-            const textToImage = new UltimateTextToImage(text, {
+            const actionTextToImage = new UltimateTextToImage(actionText, {
               // backgroundColor,
               fontSize: 60,
               fontColor,
               fontFamily: 'Consolas',
               margin: 20,
             });
-            rowArray.push(textToImage);
-          }
-          const rowImg = new HorizontalImage(rowArray, { backgroundColor });
-          actionImgMatrix.push(rowImg);
-        }
-        const finalImg = new VerticalImage(actionImgMatrix);
-        finalImg.render().toFile(path.join(__dirname, 'actionsImg.png'));
-        const imagePath = path.join(__dirname, 'actionsImg.png');
-        console.log('imagePath: ', imagePath);
+            actionRowArray.push(actionTextToImage);
 
-        const file = new AttachmentBuilder(imagePath);
+            // Make every text the same length
+            const allyText = appendUnderscoresToLength(
+              allyMatrix[row][col].toString(),
+              longestString,
+            );
+            fontColor = '#00FF00';
+            if (row === 0 || col === 0) fontColor = '#ff00ff';
+            if (row === col) fontColor = backgroundColor; // Can't ally with self, so hide diagonal
+            if (allyText.split('').every((char) => char === '_'))
+              fontColor = backgroundColor; // Camoflauge underscores
+            const allyTextToImage = new UltimateTextToImage(allyText, {
+              // backgroundColor,
+              fontSize: 60,
+              fontColor,
+              fontFamily: 'Consolas',
+              margin: 20,
+            });
+            allyRowArray.push(allyTextToImage);
+          }
+
+          const actionRowImg = new HorizontalImage(actionRowArray, {
+            backgroundColor,
+          });
+          actionImgMatrix.push(actionRowImg);
+          const allyRowImg = new HorizontalImage(allyRowArray, {
+            backgroundColor,
+          });
+          allyImgMatrix.push(allyRowImg);
+        }
+        const finalActionImg = new VerticalImage(actionImgMatrix);
+        finalActionImg.render().toFile(path.join(__dirname, 'actionsImg.png'));
+        const actionImagePath = path.join(__dirname, 'actionsImg.png');
+        // console.log('actionImagePath: ', actionImagePath);
+
+        const finalAllyImg = new VerticalImage(allyImgMatrix);
+        finalAllyImg.render().toFile(path.join(__dirname, 'allyImg.png'));
+        const allyImagePath = path.join(__dirname, 'allyImg.png');
+
+        const actionFile = new AttachmentBuilder(actionImagePath);
+        const allyFile = new AttachmentBuilder(allyImagePath);
         const actionsEmbed = new EmbedBuilder()
           .setTitle(`Round ${botData.game.currentRoundNum} Actions`)
           .setImage('attachment://actionsImg.png');
 
+        const allyEmbed = new EmbedBuilder()
+          .setTitle(`Round ${botData.game.currentRoundNum} Allies`)
+          .setImage('attachment://allyImg.png');
+
         try {
-          await interaction.followUp({ embeds: [actionsEmbed], files: [file] });
+          await interaction.followUp({
+            embeds: [actionsEmbed, allyEmbed],
+            files: [actionFile, allyFile],
+          });
           console.log('Image sent successfully!');
 
           // Delete the image file after sending
-          await fs.unlink(imagePath);
+          await fs.unlink(actionImagePath);
+          await fs.unlink(allyImagePath);
           console.log('Image file deleted.');
         } catch (error) {
           console.error('Error:', error);
