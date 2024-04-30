@@ -4,6 +4,23 @@ Welcome to the Roundtable Bot repository! This project's goal is to enable onlin
 
 Please be aware that both the board game itself and the discord bot are a work in progress.
 
+## Video Demo
+https://github.com/snaeem3/roundtable-discord-bot/assets/11710951/aef367c5-c1b3-4011-959c-1481226f3096
+- Watch the video for an example of a 3-player (Mexican Standoff) round. Here's what's happening game-wise
+  - Sameer and Borktalk slashed each other, rBats slashed Sameer.
+  - In the Mexican standoff round, the slash action deals maximum damage so Sameer and Borktalk both died.
+  - rBats was the only living player from this round and as the last living player he wins the game.
+- Notable events in the video:
+  - _(0:04)_ The round begins with a user entering `/beginRound`
+  - _(0:18)_ Living players can submit their round action when the discussion timer ends with `/submitActivity`
+  - _(0:37) and (0:42)_ The bot responds to Sameer and rBats that their round action was successfully received
+  - _(0:48)_ The bot receives the final living player's action (Borktalk) and processes the round result
+  - _(0:50)_ The bot processes the results and creates a 3 visuals of the round/game status
+    - **Action matrix**- the player in the first column applied their stated action to the corresponding player in row 1
+    - **Ally matrix**- the player in the first column chose their ally to be the corresponding player in row 1 _(Note: Allies not applicable in this round per the game rules)_
+    - **Round result text**- Information about which players died and tiebreaker points players received for successfully eliminating other players
+  - _(0:50)_ The bot determined a game-end condtion (1 player remaining) and announced the game's result
+
 # Bot Features
 
 ## Current Features
