@@ -19,7 +19,7 @@ https://github.com/snaeem3/roundtable-discord-bot/assets/11710951/aef367c5-c1b3-
     - **Action matrix**- the player in the first column applied their stated action to the corresponding player in row 1
     - **Ally matrix**- the player in the first column chose their ally to be the corresponding player in row 1 _(Note: Allies not applicable in this round per the game rules)_
     - **Round result text**- Information about which players died and tiebreaker points players received for successfully eliminating other players
-  - _(0:50)_ The bot determined a game-end condtion (1 player remaining) and announced the game's result
+  - _(0:50)_ The bot determined a game-end condition (1 player remaining) and announced the game's result
 
 # Bot Features
 
